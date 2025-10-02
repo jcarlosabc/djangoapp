@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Encuesta{% endblock %}</title>
+  <!-- HTMX + Hyperscript -->
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+  <script src="https://unpkg.com/hyperscript.org@0.9.12" defer></script>
+
+  <!-- Tailwind CDN + Flowbite -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+  <style>
+    .progress { height: 0.5rem; width: 100%; border-radius: 9999px; background: #e5e7eb; overflow: hidden; }
+    .progress > span { display:block; height:100%; background:#2563eb; transition: width .2s; }
+    .menu, ol, ul{display:ruby-text}
+  </style>
+  {% csrf_token %}
+</head>
+<body class="min-h-full bg-gray-50 text-gray-900">
+  <main class="max-w-4xl mx-auto p-6">{% block content %}{% endblock %}</main>
+
+  <script>
+    // Spinner en botones con data-loading
+    document.addEventListener('htmx:configRequest', (evt) => {
+      const btn = evt.detail.triggeringEvent?.target?.closest('button,[type=submit]');
+      if (btn && btn.dataset.loading !== undefined) {
+        btn.dataset.prevText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<svg class=\"mr-2 h-4 w-4 animate-spin\" viewBox=\"0 0 24 24\"><circle class=\"opacity-25\" cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" stroke-width=\"4\" fill=\"none\"></circle><path class=\"opacity-75\" fill=\"currentColor\" d=\"M4 12a8 8 0 018-8v4A4 4 0 004 12z\"></path></svg>Procesando…`;
+      }
+    });
+    document.addEventListener('htmx:afterRequest', (evt) => {
+      const btn = evt.detail.triggeringEvent?.target?.closest('button,[type=submit]');
+      if (btn && btn.dataset.loading !== undefined) {
+        btn.disabled = false;
+        if (btn.dataset.prevText) btn.innerHTML = btn.dataset.prevText;
+      }
+    });
+
+    // Resaltado de pregunta con error enviado por el servidor
+    document.addEventListener('validation-error', (e) => {
+      const qid = e.detail && e.detail.qid;
+      if (!qid) return;
+      const el = document.getElementById(`q-${qid}`);
+      if (!el) return;
+      el.classList.add('ring-2','ring-red-400','rounded-lg','bg-red-50/40');
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => el.classList.remove('ring-2','ring-red-400','bg-red-50/40'), 2500);
+    });
+  </script>
+</body>
+</html>

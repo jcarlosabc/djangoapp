@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ survey.name }}{% endblock %}
+{% block content %}
+  <div data-survey-id="{{ survey.id }}">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold">{{ survey.name }}</h1>
+      <p class="text-sm text-gray-500">ID encuesta: {{ survey.id }}</p>
+    </header>
+
+    <div id="alerts">
+      {% include "surveys/_alerts.html" %}
+    </div>
+
+    <!-- Barra de progreso (se actualiza al cargar el cuestionario) -->
+    <div id="progress-wrap" class="mb-4">
+      <div class="progress"><span id="progress-bar" style="width:0%"></span></div>
+      <p id="progress-text" class="mt-2 text-xs text-gray-500">0% completado</p>
+    </div>
+
+    <section id="wizard" class="space-y-6">
+      <div id="ident-step" class="p-6 bg-white border border-gray-200 rounded-lg shadow">
+        {% include "surveys/_ident_step.html" with survey=survey %}
+      </div>
+      <div id="questionnaire"></div>
+      <div id="confirmation"></div>
+    </section>
+  </div>
+{% endblock %}
+
+<script>
+  // Calcula progreso con base en inputs requeridos presentes en el DOM
+  function computeProgress() {
+    const form = document.querySelector('#survey-form');
+    if (!form) return;
+    const requiredGroups = Array.from(form.querySelectorAll('[data-required]'));
+    if (requiredGroups.length === 0) return;
+    let filled = 0;
+    requiredGroups.forEach(g => {
+      const inputs = g.querySelectorAll('input,textarea,select');
+      // Considera radios como un grupo
+      const nameSet = new Map();
+      inputs.forEach(i => {
+        if (i.type === 'radio') {
+          const has = nameSet.get(i.name) || false;
+          nameSet.set(i.name, has || i.checked);
+        } else if (i.type === 'checkbox') {
+          const has = nameSet.get(i.name) || false;
+          nameSet.set(i.name, has || i.checked);
+        } else {
+          nameSet.set(i.name, (i.value ?? '').toString().trim().length > 0);
+        }
+      });
+      const isFilled = Array.from(nameSet.values()).some(Boolean);
+      if (isFilled) filled++;
+    });
+    const pct = Math.round((filled / requiredGroups.length) * 100);
+    const bar = document.querySelector('#progress-bar');
+    const txt = document.querySelector('#progress-text');
+    if (bar) bar.style.width = pct + '%';
+    if (txt) txt.textContent = pct + '% completado';
+  }
+  document.addEventListener('input', computeProgress);
+  document.addEventListener('change', computeProgress);
+  document.addEventListener('htmx:afterSwap', (e) => {
+    if (e.detail.target && e.detail.target.id === 'questionnaire') {
+      // al cargar el cuestionario, intenta restaurar borrador y calcula progreso
+      const wrap = document.querySelector('[data-survey-id]');
+      if (wrap) loadDraft(wrap.dataset.surveyId);
+      computeProgress();
+    }
+  });
+</script>

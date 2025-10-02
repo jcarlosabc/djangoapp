@@ -1,0 +1,90 @@
+<form
+  id="survey-form"
+  hx-post="{% url 'surveys:submit' survey.id %}"
+  hx-target="#confirmation"
+  hx-swap="innerHTML"
+  hx-include="#survey-form"
+  class="space-y-6"
+>
+  {% csrf_token %}
+  <input type="hidden" name="identificacion" value="{{ identificacion }}">
+  {% if token %}<input type="hidden" name="token" value="{{ token }}">{% endif %}
+  <input type="hidden" name="full_name" value="{{ full_name }}">
+  <input type="hidden" name="phone" value="{{ phone }}">
+  <input type="hidden" name="email" value="{{ email }}">
+
+  {% for sec in survey.sections.all|dictsort:"order" %}
+    <section class="p-6 bg-white border border-gray-200 rounded-lg shadow">
+      <h3 class="text-lg font-semibold mb-2">{{ sec.order }}. {{ sec.title }}</h3>
+      <div class="space-y-4">
+        {% for q in sec.questions.all|dictsort:"order" %}
+          <fieldset id="q-{{ q.id }}" class="space-y-2" data-required="{% if q.required %}1{% endif %}">
+            <legend class="block text-sm font-medium text-gray-900">
+              {{ q.order }}. {{ q.text }}
+              {% if q.required %}
+                <span class="ms-2 text-xs font-medium px-2.5 py-0.5 rounded bg-red-100 text-red-800">Obligatoria</span>
+              {% endif %}
+            </legend>
+            {% if q.help_text %}<p class="text-xs text-gray-500">{{ q.help_text }}</p>{% endif %}
+
+            <div class="mt-1">
+              {% if q.qtype == 'text' %}
+                <textarea name="q_{{ q.id }}__text" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"></textarea>
+              {% elif q.qtype == 'int' %}
+                <input type="number" name="q_{{ q.id }}__int" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+              {% elif q.qtype == 'dec' %}
+                <input type="number" step="0.01" name="q_{{ q.id }}__dec" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+              {% elif q.qtype == 'bool' %}
+                <div class="flex flex-wrap gap-4">
+                  <label class="inline-flex items-center gap-2">
+                    <input type="radio" name="q_{{ q.id }}__bool" value="true" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
+                    <span>Sí</span>
+                  </label>
+                  <label class="inline-flex items-center gap-2">
+                    <input type="radio" name="q_{{ q.id }}__bool" value="false" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
+                    <span>No</span>
+                  </label>
+                </div>
+              {% elif q.qtype == 'date' %}
+                <input type="date" name="q_{{ q.id }}__date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" max="{{ now|date:'Y-m-d' }}">
+              {% elif q.qtype == 'single' or q.qtype == 'likert' %}
+                <ul class="space-y-2">
+                  {% for opt in q.options.all|dictsort:"order" %}
+                    <li>
+                      <label class="flex items-center gap-2">
+                        <input type="radio" name="q_{{ q.id }}__opts" value="{{ opt.id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
+                        <span>{{ opt.label }}</span>
+                        {% if opt.numeric_value is not None %}
+                          <span class="ml-1 text-xs text-gray-400">({{ opt.numeric_value }})</span>
+                        {% endif %}
+                      </label>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% elif q.qtype == 'multi' %}
+                <ul class="space-y-2">
+                  {% for opt in q.options.all|dictsort:"order" %}
+                    <li>
+                      <label class="flex items-center gap-2">
+                        <input type="checkbox" name="q_{{ q.id }}__opts" value="{{ opt.id }}" data-q="{{ q.id }}" {% if q.max_choices and q.max_choices > 0 %}data-max="{{ q.max_choices }}"{% endif %} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                        <span>{{ opt.label }}</span>
+                      </label>
+                    </li>
+                  {% endfor %}
+                </ul>
+                {% if q.max_choices and q.max_choices > 0 %}
+                  <p class="text-xs text-gray-500">Máximo {{ q.max_choices }} selecciones.</p>
+                {% endif %}
+              {% endif %}
+            </div>
+          </fieldset>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+
+  <div class="p-3 flex items-center justify-between bg-white/80 backdrop-blur border-t border-gray-200 sticky bottom-0 z-10">
+    <button type="button" hx-get="{% url 'surveys:ident_partial' survey.id %}" hx-target="#ident-step" hx-swap="innerHTML" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5">Atrás</button>
+    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5" data-loading>Enviar encuesta</button>
+  </div>
+</form>
