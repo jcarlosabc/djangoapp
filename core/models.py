@@ -21,11 +21,13 @@ class Survey(models.Model):
         return self.name
 
 
+
 class Section(models.Model):
     """Secciones/módulos (Sociodemográfico, Salud, Escala Zarit, etc.)."""
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='sections')
     title = models.CharField(max_length=200)
     order = models.PositiveIntegerField(default=1)
+    #is_scala = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('survey', 'order')
@@ -34,6 +36,7 @@ class Section(models.Model):
     def __str__(self):
         return f"{self.survey.code} · {self.order:02d} · {self.title}"
 
+#QuestionType
 
 class Question(models.Model):
     """Pregunta genérica, parametrizada por tipo."""
@@ -93,7 +96,7 @@ class Option(models.Model):
     def __str__(self):
         return f"{self.question.code} · {self.code}"
 
-
+#no va
 class AccessToken(models.Model):
     """Token de un solo uso para identificar y limitar a un envío por persona."""
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='tokens')
@@ -110,6 +113,7 @@ class AccessToken(models.Model):
     def __str__(self):
         return f"{self.survey.code}:{self.token} (used={self.used})"
 
+#Interviewer
 
 class ResponseSet(models.Model):
     """Un envío de encuesta (una persona/visitador)."""
@@ -132,6 +136,8 @@ class ResponseSet(models.Model):
     interviewer = models.CharField(max_length=120, blank=True)  # encuestador
     source = models.CharField(max_length=80, blank=True)  # p.ej. 'operativo_barrio_x'
     device_fingerprint = models.CharField(max_length=100, blank=True)
+
+    #user =
 
     # Token usado (si la encuesta exige token)
     access_token = models.OneToOneField(
