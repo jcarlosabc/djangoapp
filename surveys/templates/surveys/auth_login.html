@@ -1,1 +1,113 @@
-{% extends 'surveys/base.html' %}{% block title %}Ingresar{% endblock %}{% block content %}<div class='max-w-md mx-auto bg-white p-6 rounded shadow'><h1 class='text-xl font-semibold mb-4'>Ingresar</h1><form method='post' class='space-y-4'>{% csrf_token %}{{ form.as_p }}<button class='px-4 py-2 rounded bg-blue-600 text-white'>Entrar</button></form></div>{% endblock %}
+{% extends 'surveys/base.html' %}
+
+{% block title %}Ingresar{% endblock %}
+
+{% block content %}
+<style>
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+    background-color: #f3f4f6;
+  }
+
+  .login-form {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .login-form:hover {
+    transform: translateY(-5px);
+  }
+
+  .form-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #333;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+    transition: border-color 0.2s;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    background-color: #3b82f6;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .submit-btn:hover {
+    background-color: #2563eb;
+  }
+</style>
+
+<div class="login-container">
+  <form method="post" class="login-form">
+    {% csrf_token %}
+    <h1 class="form-title">Ingresar</h1>
+    
+    <div class="form-group">
+      <label for="id_username" class="form-label">{{ form.username.label }}</label>
+      {{ form.username }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_password" class="form-label">{{ form.password.label }}</label>
+      {{ form.password }}
+    </div>
+
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        Tus datos son incorrectos. Por favor, inténtalo de nuevo.
+      </div>
+    {% endif %}
+
+    <button type="submit" class="submit-btn">Entrar</button>
+  </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.login-form');
+    form.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+      form.style.transform = 'translateY(0)';
+    }, 100);
+
+    document.getElementById('id_username').classList.add('form-input');
+    document.getElementById('id_password').classList.add('form-input');
+  });
+</script>
+{% endblock %}
