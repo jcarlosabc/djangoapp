@@ -16,9 +16,14 @@ class SectionInline(admin.StackedInline):
 
 @admin.register(Survey)
 class SurveyAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "is_active", "created_at", "require_token")
+    list_display = ("name", "description", "code", "is_active", "created_at", "require_token")
     prepopulated_fields = {"code": ("name",)}
     inlines = [SectionInline]
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'description', 'code', 'is_active', 'require_token')
+        }),
+    )
 
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
@@ -37,11 +42,26 @@ class InterviewerAdmin(admin.ModelAdmin):
     list_display = ("full_name", "document_type", "document_number", "phone", "email")
     search_fields = ("full_name", "document_number", "email")
 
+class AnswerInline(admin.TabularInline):
+    model = Answer
+    extra = 0
+    readonly_fields = ('question', 'text_answer', 'integer_answer', 'decimal_answer', 'bool_answer', 'date_answer', 'options_display')
+    fields = ('question', 'text_answer', 'integer_answer', 'decimal_answer', 'bool_answer', 'date_answer', 'options_display')
+    can_delete = False
+
+    def options_display(self, obj):
+        return ", ".join([option.label for option in obj.options.all()])
+    options_display.short_description = "Opciones Seleccionadas"
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
 @admin.register(ResponseSet)
 class ResponseSetAdmin(admin.ModelAdmin):
     list_display = ("survey", "identificacion", "document_type", "user", "interviewer", "created_at")
     list_filter = ("survey", "document_type")
     search_fields = ("identificacion", "full_name", "email", "phone")
+    inlines = [AnswerInline]
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):

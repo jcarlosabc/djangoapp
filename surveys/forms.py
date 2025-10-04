@@ -67,7 +67,7 @@ def build_answers_form_for_section(section):
             field = forms.DecimalField(max_digits=12, decimal_places=2, **common)
 
         elif q.qtype == QuestionType.BOOL:
-            field = forms.BooleanField(required=q.required, **common)
+            field = forms.BooleanField(**common)
 
         elif q.qtype == QuestionType.DATE:
             field = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}), **common)

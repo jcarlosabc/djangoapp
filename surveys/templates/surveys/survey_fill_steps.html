@@ -17,7 +17,10 @@
   }
 </style>
 
-<h1 class="text-xl font-semibold mb-6">{{ survey.name }}</h1>
+<h1 class="text-xl font-semibold mb-2">{{ survey.name }}</h1>
+{% if survey.description %}
+  <p class="text-gray-600 mb-6">{{ survey.description }}</p>
+{% endif %}
 
 <!-- PROGRESO -->
 <div class="mb-6">
