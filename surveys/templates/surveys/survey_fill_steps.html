@@ -2,6 +2,20 @@
 {% extends "surveys/base.html" %}
 {% block title %}{{ survey.name }}{% endblock %}
 {% block content %}
+<style>
+  .radio-options-inline > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .radio-options-inline > div > div {
+    display: flex;
+    align-items: center;
+  }
+  .radio-options-inline input[type="radio"] {
+    margin-right: 0.5rem;
+  }
+</style>
 
 <h1 class="text-xl font-semibold mb-6">{{ survey.name }}</h1>
 
@@ -48,7 +62,9 @@
       {% for field in form %}
         <div class="field" data-required="{{ field.field.required|yesno:'1,0' }}">
           <label class="block text-sm font-medium mb-1">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
-          {{ field }}
+          <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
+            {{ field }}
+          </div>
           {% for e in field.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
           <p class="client-error text-xs text-red-600 mt-1 hidden"></p>
         </div>
