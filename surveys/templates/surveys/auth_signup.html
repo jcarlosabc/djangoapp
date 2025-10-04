@@ -1,0 +1,1 @@
+{% extends 'surveys/base.html' %}{% block title %}Crear cuenta{% endblock %}{% block content %}<div class='max-w-md mx-auto bg-white p-6 rounded shadow'><h1 class='text-xl font-semibold mb-4'>Crear cuenta</h1><form method='post' class='space-y-4'>{% csrf_token %}{{ form.as_p }}<button class='px-4 py-2 rounded bg-blue-600 text-white'>Crear</button></form></div>{% endblock %}

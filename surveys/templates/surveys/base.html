@@ -1,0 +1,41 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}Encuestas{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: {} } }</script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <nav class="bg-white border-b sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="{% url 'surveys:list' %}" class="font-semibold">Encuestas</a>
+      <div class="flex items-center gap-4">
+        {% if user.is_authenticated %}
+          <span class="text-sm">Hola, {{ user.username }}</span>
+          <a class="text-sm text-blue-600" href="{% url 'logout' %}">Salir</a>
+        {% else %}
+          <a class="text-sm text-blue-600" href="{% url 'login' %}">Ingresar</a>
+          <a class="text-sm text-blue-600" href="{% url 'signup' %}">Crear cuenta</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-4 py-6">
+    {% if messages %}
+      <div class="space-y-2 mb-4">
+        {% for message in messages %}
+          <div class="p-3 rounded border {{ message.tags|yesno:'border-green-300,border-red-300' }}
+               {{ message.tags|yesno:'bg-green-50,bg-red-50' }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
