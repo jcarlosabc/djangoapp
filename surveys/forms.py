@@ -1,139 +1,105 @@
-
 from django import forms
-from django.core.exceptions import ValidationError
-from .models import ResponseSet, Survey, QuestionType
+from django.forms import ModelChoiceField, ModelMultipleChoiceField
+from .models import Question, Option, QuestionType, Barrio, Interviewer # Added Interviewer
 
-class RespondentForm(forms.ModelForm):
-    class Meta:
-        model = ResponseSet
-        fields = ["identificacion", "document_type", "full_name", "email", "phone", "interviewer"]
+class ResponseSetForm(forms.Form):
+    identificacion = forms.CharField(max_length=30, label="Identificación")
+    document_type = forms.ChoiceField(choices=[], label="Tipo de Documento")
+    full_name = forms.CharField(max_length=200, label="Nombre Completo", required=False)
+    email = forms.EmailField(label="Correo Electrónico", required=False)
+    phone = forms.CharField(max_length=30, label="Teléfono", required=False)
+    interviewer = forms.ModelChoiceField(
+        queryset=Interviewer.objects.all(),
+        label="Entrevistador",
+        required=False,
+        empty_label="Selecciona un entrevistador"
+    )
 
-    def __init__(self, *args, survey: Survey, show_interviewer: bool, **kwargs):
+    def __init__(self, *args, **kwargs):
+        document_types = kwargs.pop("document_types", [])
         super().__init__(*args, **kwargs)
-        self.survey = survey
-        if not show_interviewer:
-            self.fields.pop("interviewer", None)
-        self.fields["identificacion"].required = True
-        self.fields["document_type"].required = True
+        self.fields["document_type"].choices = document_types
 
-        for _, field in self.fields.items():
-            css = field.widget.attrs.get("class", "")
-            field.widget.attrs["class"] = (css + " w-full border rounded px-3 py-2").strip()
-
-    def clean(self):
-        cleaned = super().clean()
-        ident = cleaned.get("identificacion")
-        doctype = cleaned.get("document_type")
-        if ident and doctype:
-            exists = ResponseSet.objects.filter(
-                survey=self.survey, identificacion=ident, document_type=doctype
-            ).exists()
-            if exists:
-                raise ValidationError("Esta persona ya respondió esta encuesta (no se permite duplicidad).")
-        return cleaned
-    
+class AnswersForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, (forms.TextInput, forms.Textarea, forms.DateInput, forms.Select)):
+                field.widget.attrs.update({"class": "form-control"})
+            elif isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):
+                field.widget.attrs.update({"class": "form-check-input"})
 
 def build_answers_form_for_section(section):
-    """
-    Devuelve una clase de Form con campos dinámicos para la sección dada.
-    Se usa type(...) para que Django registre base_fields al crear la clase.
-    """
     fields = {}
-
-    for q in section.questions.all().prefetch_related("options"):
-        name = f"q_{q.id}"
-        common = {"label": q.text, "required": q.required, "help_text": q.help_text}
-
-        if q.qtype in (QuestionType.SINGLE, QuestionType.LIKERT):
-            choices = [(o.id, o.label) for o in q.options.all()]
-            field = forms.ChoiceField(choices=choices, widget=forms.RadioSelect, **common)
-
-        elif q.qtype == QuestionType.MULTI:
-            choices = [(o.id, o.label) for o in q.options.all()]
-            field = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple, **common)
-            if q.max_choices:
-                def _limit_max(value, maxc=q.max_choices, code=q.code):
-                    if len(value) > maxc:
-                        raise ValidationError(f"'{code}' admite máximo {maxc} selecciones.")
-                field.validators.append(_limit_max)
-
-        elif q.qtype == QuestionType.TEXT:
-            field = forms.CharField(widget=forms.Textarea(attrs={"rows": 2}), **common)
-
+    for q in section.questions.all():
+        field_name = f"question_{q.pk}"
+        if q.qtype == QuestionType.TEXT:
+            fields[field_name] = forms.CharField(
+                label=q.text,
+                help_text=q.help_text,
+                required=q.required,
+                widget=forms.Textarea if q.max_choices == 0 else forms.TextInput, # max_choices 0 for textarea
+            )
         elif q.qtype == QuestionType.INTEGER:
-            field = forms.IntegerField(**common)
-
+            fields[field_name] = forms.IntegerField(
+                label=q.text,
+                help_text=q.help_text,
+                required=q.required,
+            )
         elif q.qtype == QuestionType.DECIMAL:
-            field = forms.DecimalField(max_digits=12, decimal_places=2, **common)
-
+            fields[field_name] = forms.DecimalField(
+                label=q.text,
+                help_text=q.help_text,
+                required=q.required,
+            )
         elif q.qtype == QuestionType.BOOL:
-            field = forms.BooleanField(**common)
-
+            fields[field_name] = forms.BooleanField(
+                label=q.text,
+                help_text=q.help_text,
+                required=q.required,
+                widget=forms.CheckboxInput,
+            )
         elif q.qtype == QuestionType.DATE:
-            field = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}), **common)
-
-        else:
-            field = forms.CharField(**common)
-
-        field.question = q
-
-        # Estilos para inputs normales
-        if not isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):
-            css = field.widget.attrs.get("class", "")
-            width_class = "w-full"
-            if q.qtype in (QuestionType.INTEGER, QuestionType.DECIMAL, QuestionType.DATE):
-                width_class = "w-auto"
-            field.widget.attrs["class"] = (css + f" {width_class} border rounded px-3 py-2").strip()
-
-        fields[name] = field
-
-    DynamicForm = type(f"AnswersForm_Section_{section.id}", (forms.Form,), fields)
-    return DynamicForm
-
-
-def build_answers_form_for_section_bk(section):
-    class _AnswersForm(forms.Form):
-        pass
-
-    for q in section.questions.all().prefetch_related("options"):
-        name = f"q_{q.id}"
-        common = {"label": q.text, "required": q.required, "help_text": q.help_text}
-
-        if q.qtype in (QuestionType.SINGLE, QuestionType.LIKERT):
-            choices = [(o.id, o.label) for o in q.options.all()]
-            field = forms.ChoiceField(choices=choices, widget=forms.RadioSelect, **common)
-
-        elif q.qtype == QuestionType.MULTI:
-            choices = [(o.id, o.label) for o in q.options.all()]
-            field = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple, **common)
-            if q.max_choices:
-                def _limit_max(value, maxc=q.max_choices, code=q.code):
-                    if len(value) > maxc:
-                        raise ValidationError(f"'{code}' admite máximo {maxc} selecciones.")
-                field.validators.append(_limit_max)
-
-        elif q.qtype == QuestionType.TEXT:
-            field = forms.CharField(widget=forms.Textarea(attrs={"rows": 2}), **common)
-
-        elif q.qtype == QuestionType.INTEGER:
-            field = forms.IntegerField(**common)
-
-        elif q.qtype == QuestionType.DECIMAL:
-            field = forms.DecimalField(max_digits=12, decimal_places=2, **common)
-
-        elif q.qtype == QuestionType.BOOL:
-            field = forms.BooleanField(**common)
-
-        elif q.qtype == QuestionType.DATE:
-            field = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}), **common)
-
-        else:
-            field = forms.CharField(**common)
-
-        if not isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):
-            css = field.widget.attrs.get("class", "")
-            field.widget.attrs["class"] = (css + " w-full border rounded px-3 py-2").strip()
-
-        setattr(_AnswersForm, name, field)
-
-    return _AnswersForm
+            fields[field_name] = forms.DateField(
+                label=q.text,
+                help_text=q.help_text,
+                required=q.required,
+                widget=forms.DateInput(attrs={'type': 'date'}),
+            )
+        elif q.qtype in [QuestionType.SINGLE, QuestionType.MULTI, QuestionType.LIKERT]:
+            choices = [(option.pk, option.label) for option in q.options.all()]
+            if q.qtype == QuestionType.SINGLE or q.qtype == QuestionType.LIKERT:
+                fields[field_name] = forms.ChoiceField(
+                    label=q.text,
+                    help_text=q.help_text,
+                    required=q.required,
+                    choices=choices,
+                    widget=forms.RadioSelect,
+                )
+            elif q.qtype == QuestionType.MULTI:
+                fields[field_name] = forms.MultipleChoiceField(
+                    label=q.text,
+                    help_text=q.help_text,
+                    required=q.required,
+                    choices=choices,
+                    widget=forms.CheckboxSelectMultiple,
+                )
+        elif q.qtype == QuestionType.BARRIO: # New BARRIO type handling
+            if q.max_choices == 1: # Single barrio selection
+                fields[field_name] = ModelChoiceField(
+                    queryset=q.barrios.all() if q.barrios.exists() else Barrio.objects.all(),
+                    label=q.text,
+                    help_text=q.help_text,
+                    required=q.required,
+                    empty_label="Selecciona un barrio",
+                )
+            else: # Multiple barrio selection
+                fields[field_name] = ModelMultipleChoiceField(
+                    queryset=q.barrios.all() if q.barrios.exists() else Barrio.objects.all(),
+                    label=q.text,
+                    help_text=q.help_text,
+                    required=q.required,
+                    widget=forms.SelectMultiple, # Changed from CheckboxSelectMultiple to SelectMultiple
+                )
+        # Removed the old geojson_file and geojson_property_name block
+    return type(f"AnswersFormForSection{section.pk}", (forms.Form,), fields)

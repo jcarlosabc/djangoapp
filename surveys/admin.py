@@ -1,6 +1,5 @@
-
 from django.contrib import admin
-from .models import Survey, Section, Question, Option, Interviewer, ResponseSet, Answer
+from .models import Survey, Section, Question, Option, Interviewer, ResponseSet, Answer, Barrio, BarrioListFile # Updated import
 
 class OptionInline(admin.TabularInline):
     model = Option
@@ -36,6 +35,12 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ("section", "code", "qtype", "required", "order", "max_choices")
     list_filter = ("qtype", "required", "section__survey")
     inlines = [OptionInline]
+    fieldsets = (
+        (None, {
+            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'required', 'order', 'max_choices', 'barrios') # Added 'barrios'
+        }),
+        # Removed 'GeoJSON Options' fieldset
+    )
 
 @admin.register(Interviewer)
 class InterviewerAdmin(admin.ModelAdmin):
@@ -45,13 +50,17 @@ class InterviewerAdmin(admin.ModelAdmin):
 class AnswerInline(admin.TabularInline):
     model = Answer
     extra = 0
-    readonly_fields = ('question', 'text_answer', 'integer_answer', 'decimal_answer', 'bool_answer', 'date_answer', 'options_display')
-    fields = ('question', 'text_answer', 'integer_answer', 'decimal_answer', 'bool_answer', 'date_answer', 'options_display')
+    readonly_fields = ('question', 'text_answer', 'integer_answer', 'decimal_answer', 'bool_answer', 'date_answer', 'options_display', 'selected_barrios_display') # Added selected_barrios_display
+    fields = ('question', 'text_answer', 'integer_answer', 'decimal_answer', 'bool_answer', 'date_answer', 'options_display', 'selected_barrios_display') # Added selected_barrios_display
     can_delete = False
 
     def options_display(self, obj):
         return ", ".join([option.label for option in obj.options.all()])
     options_display.short_description = "Opciones Seleccionadas"
+
+    def selected_barrios_display(self, obj): # New method to display selected barrios
+        return ", ".join([barrio.name for barrio in obj.selected_barrios.all()])
+    selected_barrios_display.short_description = "Barrios Seleccionados"
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -67,3 +76,15 @@ class ResponseSetAdmin(admin.ModelAdmin):
 class AnswerAdmin(admin.ModelAdmin):
     list_display = ("response", "question")
     list_filter = ("question__section__survey",)
+
+# Removed @admin.register(GeoJSONFile) and GeoJSONFileAdmin
+
+@admin.register(Barrio)
+class BarrioAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code')
+    search_fields = ('name', 'code')
+
+@admin.register(BarrioListFile) # New admin registration
+class BarrioListFileAdmin(admin.ModelAdmin):
+    list_display = ('name', 'uploaded_at')
+    search_fields = ('name',)
