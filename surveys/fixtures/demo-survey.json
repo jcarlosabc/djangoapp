@@ -1,0 +1,214 @@
+[
+  {
+    "model": "surveys.survey",
+    "pk": 1,
+    "fields": {
+      "name": "Encuesta Demo de Caracterización",
+      "code": "encuesta-demo",
+      "is_active": true,
+      "created_at": "2025-10-03T10:00:00Z",
+      "require_token": false
+    }
+  },
+
+  {
+    "model": "surveys.section",
+    "pk": 1,
+    "fields": {
+      "survey": 1,
+      "title": "Datos Generales",
+      "order": 1
+    }
+  },
+  {
+    "model": "surveys.section",
+    "pk": 2,
+    "fields": {
+      "survey": 1,
+      "title": "Salud y Vivienda",
+      "order": 2
+    }
+  },
+
+  {
+    "model": "surveys.question",
+    "pk": 1,
+    "fields": {
+      "section": 1,
+      "code": "nombre-hogar",
+      "text": "¿Nombre del hogar?",
+      "help_text": "",
+      "qtype": "text",
+      "required": true,
+      "order": 1,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 2,
+    "fields": {
+      "section": 1,
+      "code": "num-integrantes",
+      "text": "Número de integrantes del hogar",
+      "help_text": "Ingresa un número entero",
+      "qtype": "int",
+      "required": true,
+      "order": 2,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 3,
+    "fields": {
+      "section": 1,
+      "code": "fecha-visita",
+      "text": "Fecha de visita",
+      "help_text": "",
+      "qtype": "date",
+      "required": true,
+      "order": 3,
+      "max_choices": 0
+    }
+  },
+
+  {
+    "model": "surveys.question",
+    "pk": 4,
+    "fields": {
+      "section": 2,
+      "code": "afiliacion-salud",
+      "text": "¿Afiliación a salud?",
+      "help_text": "Selecciona una opción",
+      "qtype": "single",
+      "required": true,
+      "order": 1,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 5,
+    "fields": {
+      "section": 2,
+      "code": "servicios-vivienda",
+      "text": "Servicios con los que cuenta la vivienda",
+      "help_text": "Puedes elegir varias (máx. 3)",
+      "qtype": "multi",
+      "required": true,
+      "order": 2,
+      "max_choices": 3
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 6,
+    "fields": {
+      "section": 2,
+      "code": "visitas-aps",
+      "text": "¿Recibe visitas de APS regularmente?",
+      "help_text": "",
+      "qtype": "bool",
+      "required": true,
+      "order": 3,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 7,
+    "fields": {
+      "section": 2,
+      "code": "gasto-salud",
+      "text": "Gasto mensual en salud (COP)",
+      "help_text": "Ejemplo: 150000.00",
+      "qtype": "dec",
+      "required": true,
+      "order": 4,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 8,
+    "fields": {
+      "section": 2,
+      "code": "satisfaccion-servicios",
+      "text": "Satisfacción con el acceso a servicios de salud",
+      "help_text": "Escala de 0 (Muy en desacuerdo) a 4 (Muy de acuerdo)",
+      "qtype": "likert",
+      "required": true,
+      "order": 5,
+      "max_choices": 0
+    }
+  },
+
+  {
+    "model": "surveys.option",
+    "pk": 1,
+    "fields": { "question": 4, "code": "contributivo", "label": "Contributivo", "order": 1, "numeric_value": null }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 2,
+    "fields": { "question": 4, "code": "subsidiado", "label": "Subsidiado", "order": 2, "numeric_value": null }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 3,
+    "fields": { "question": 4, "code": "particular", "label": "Particular", "order": 3, "numeric_value": null }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 4,
+    "fields": { "question": 4, "code": "ninguno", "label": "Ninguno", "order": 4, "numeric_value": null }
+  },
+
+  {
+    "model": "surveys.option",
+    "pk": 5,
+    "fields": { "question": 5, "code": "agua", "label": "Agua", "order": 1, "numeric_value": null }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 6,
+    "fields": { "question": 5, "code": "energia", "label": "Energía", "order": 2, "numeric_value": null }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 7,
+    "fields": { "question": 5, "code": "gas", "label": "Gas", "order": 3, "numeric_value": null }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 8,
+    "fields": { "question": 5, "code": "internet", "label": "Internet", "order": 4, "numeric_value": null }
+  },
+
+  {
+    "model": "surveys.option",
+    "pk": 9,
+    "fields": { "question": 8, "code": "muy-en-desacuerdo", "label": "Muy en desacuerdo", "order": 1, "numeric_value": 0 }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 10,
+    "fields": { "question": 8, "code": "en-desacuerdo", "label": "En desacuerdo", "order": 2, "numeric_value": 1 }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 11,
+    "fields": { "question": 8, "code": "neutral", "label": "Neutral", "order": 3, "numeric_value": 2 }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 12,
+    "fields": { "question": 8, "code": "de-acuerdo", "label": "De acuerdo", "order": 4, "numeric_value": 3 }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 13,
+    "fields": { "question": 8, "code": "muy-de-acuerdo", "label": "Muy de acuerdo", "order": 5, "numeric_value": 4 }
+  }
+]

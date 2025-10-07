@@ -1,4 +1,5 @@
 
+{% load static %}
 <!doctype html>
 <html lang="es">
 <head>
@@ -11,12 +12,16 @@
 <body class="bg-gray-50 text-gray-800">
   <nav class="bg-white border-b sticky top-0 z-10">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="{% url 'surveys:list' %}" class="font-semibold">Encuestas</a>
+      <a href="{% url 'surveys:list' %}" class="flex items-center gap-2 font-semibold">
+        <img src="{% static 'surveys/images/logo.png' %}" alt="Logo" class="h-8">
+        Encuestas
+      </a>
+      <!-- <a href="{% url 'surveys:public_list' %}" class="font-semibold">Encuestas Públicas</a> -->
       <div class="flex items-center gap-4">
         {% if user.is_authenticated %}
           <span class="text-sm">Hola, {{ user.username }}</span>
           <a class="text-sm text-blue-600" href="{% url 'logout' %}">Salir</a>
-        {% else %}
+        {% elif not public %}
           <a class="text-sm text-blue-600" href="{% url 'login' %}">Ingresar</a>
           <a class="text-sm text-blue-600" href="{% url 'signup' %}">Crear cuenta</a>
         {% endif %}

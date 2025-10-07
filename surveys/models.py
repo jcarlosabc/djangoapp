@@ -19,6 +19,7 @@ DOCUMENT_TYPES = [
 
 class Survey(models.Model):
     name = models.CharField(max_length=200, unique=True)
+    description = models.TextField(blank=True)
     code = models.SlugField(max_length=80, unique=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

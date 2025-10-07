@@ -11,6 +11,10 @@ from django.views.decorators.http import require_POST
 from .forms import RespondentForm, build_answers_form_for_section
 from .models import Answer, QuestionType, ResponseSet, Survey
 
+def survey_list_public(request):
+    surveys = Survey.objects.filter(is_active=True).order_by("-created_at")
+    return render(request, "surveys/survey_list.html", {"surveys": surveys, "public": True})
+
 @login_required
 def survey_list(request):
     surveys = Survey.objects.filter(is_active=True).order_by("-created_at")
@@ -81,6 +85,7 @@ def survey_fill(request, code):
         "survey": survey,
         "resp_form": resp_form,
         "sections_forms": section_forms,
+        "public": not request.user.is_authenticated,
     })
 
 @require_POST

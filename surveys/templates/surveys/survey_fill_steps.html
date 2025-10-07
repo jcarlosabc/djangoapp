@@ -2,8 +2,37 @@
 {% extends "surveys/base.html" %}
 {% block title %}{{ survey.name }}{% endblock %}
 {% block content %}
+<style>
+  .radio-options-inline > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .radio-options-inline > div > div {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  .radio-options-inline > div > div:hover {
+    border-color: #3b82f6;
+  }
+  .radio-options-inline input[type="radio"] {
+    margin-right: 0.5rem;
+    accent-color: #3b82f6;
+  }
+</style>
 
-<h1 class="text-xl font-semibold mb-6">{{ survey.name }}</h1>
+{% load static %}
+<img src="{% static 'surveys/images/logo.png' %}" alt="Logo" class="h-24 mx-auto mb-4">
+<h1 class="text-xl font-semibold mb-2 text-center">{{ survey.name }}</h1>
+{% if survey.description %}
+  <p class="text-gray-600 mb-6 text-center">{{ survey.description }}</p>
+{% endif %}
 
 <!-- PROGRESO -->
 <div class="mb-6">
@@ -26,14 +55,14 @@
 
 <form method="post" class="space-y-6" data-check-url="{% url 'surveys:check_respondent' survey.code %}">{% csrf_token %}
   <!-- Paso 0: Datos encuestado -->
-  <div class="step bg-white p-5 rounded-lg shadow">
-    <h2 class="font-semibold mb-3">Datos del encuestado</h2>
-    <div class="grid sm:grid-cols-2 gap-4">
+  <div class="step bg-white p-6 rounded-xl shadow-md">
+    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Datos del encuestado</h2>
+    <div class="grid sm:grid-cols-2 gap-6">
       {% for f in resp_form %}
         <div class="field" data-required="{{ f.field.required|yesno:'1,0' }}">
-          <label class="block text-sm font-medium mb-1">{{ f.label }}{% if f.field.required %} *{% endif %}</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ f.label }}{% if f.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
           {{ f }}
-          {% for e in f.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+          {% for e in f.errors %}<p class="text-xs text-red-600 mt-1">{{ e }}</p>{% endfor %}
           <p class="client-error text-xs text-red-600 mt-1 hidden"></p>
         </div>
       {% endfor %}
@@ -42,189 +71,276 @@
 
   <!-- Pasos siguientes: Secciones -->
   {% for section, form in sections_forms %}
-  <div class="step bg-white p-5 rounded-lg shadow hidden">
-    <h2 class="font-semibold mb-3">Sección {{ forloop.counter }}: {{ section.title }}</h2>
-    <div class="space-y-4">
-      {% for field in form %}
-        <div class="field" data-required="{{ field.field.required|yesno:'1,0' }}">
-          <label class="block text-sm font-medium mb-1">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
-          {{ field }}
-          {% for e in field.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
-          <p class="client-error text-xs text-red-600 mt-1 hidden"></p>
+  <div class="step bg-white p-6 rounded-xl shadow-md hidden">
+    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Sección {{ forloop.counter }}: {{ section.title }}</h2>
+    
+    {% with questions=form.visible_fields %}
+    {% if questions|length > 5 %}
+      <div class="paged-section" data-questions-per-page="5">
+        <div class="space-y-8">
+          {% for field in questions %}
+            <div class="field-wrapper p-4 border rounded-lg bg-gray-50 {% if forloop.counter0 >= 5 %}hidden{% endif %}" data-question-index="{{ forloop.counter0 }}">
+              <div class="field" data-required="{{ field.field.required|yesno:'1,0' }}">
+                <label class="block text-base font-medium text-gray-800 mb-3">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
+                <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
+                  {{ field }}
+                </div>
+                {% for e in field.errors %}<p class="text-xs text-red-600 mt-2">{{ e }}</p>{% endfor %}
+                <p class="client-error text-xs text-red-600 mt-2 hidden"></p>
+              </div>
+            </div>
+          {% endfor %}
         </div>
-      {% endfor %}
-    </div>
+        <div class="flex justify-between mt-4">
+          <button type="button" class="page-prev-btn px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors hidden">Anterior</button>
+          <button type="button" class="page-next-btn px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors">Siguiente</button>
+        </div>
+        <div class="text-center text-sm text-gray-500 mt-2 page-counter"></div>
+      </div>
+    {% else %}
+      <div class="space-y-8">
+        {% for field in questions %}
+          <div class="field p-4 border rounded-lg bg-gray-50" data-required="{{ field.field.required|yesno:'1,0' }}">
+            <label class="block text-base font-medium text-gray-800 mb-3">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
+            <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
+              {{ field }}
+            </div>
+            {% for e in field.errors %}<p class="text-xs text-red-600 mt-2">{{ e }}</p>{% endfor %}
+            <p class="client-error text-xs text-red-600 mt-2 hidden"></p>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% endwith %}
   </div>
   {% endfor %}
 
-  <div class="flex justify-between mt-6">
-    <button type="button" id="prevBtn" class="px-4 py-2 rounded bg-gray-300 text-gray-700 hidden">Anterior</button>
-    <button type="button" id="nextBtn" class="px-4 py-2 rounded bg-blue-600 text-white">Siguiente</button>
-    <button type="submit" id="submitBtn" class="px-4 py-2 rounded bg-green-600 text-white hidden">Enviar</button>
+  <div class="flex justify-between mt-8">
+    <button type="button" id="prevBtn" class="px-6 py-2 rounded-lg bg-gray-300 text-gray-800 font-semibold hover:bg-gray-400 transition-colors hidden">Anterior</button>
+    <button type="button" id="nextBtn" class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors">Siguiente</button>
+    <button type="submit" id="submitBtn" class="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors hidden">Enviar</button>
   </div>
 </form>
 
 <script>
-let currentStep = 0;
-const steps = document.querySelectorAll(".step");
-const pills = document.querySelectorAll(".step-pill");
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
-const submitBtn = document.getElementById("submitBtn");
-const progressBar = document.getElementById("progressBar");
-const stepText = document.getElementById("stepText");
-const percentText = document.getElementById("percentText");
-const totalSteps = steps.length;
+document.addEventListener('DOMContentLoaded', () => {
+    let currentStep = 0;
+    const steps = document.querySelectorAll(".step");
+    const pills = document.querySelectorAll(".step-pill");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const submitBtn = document.getElementById("submitBtn");
+    const progressBar = document.getElementById("progressBar");
+    const stepText = document.getElementById("stepText");
+    const percentText = document.getElementById("percentText");
+    const totalSteps = steps.length;
 
-const form = document.querySelector("form");
-const checkUrl = form.dataset.checkUrl;
-const csrfTokenInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+    const form = document.querySelector("form");
+    const checkUrl = form.dataset.checkUrl;
+    const csrfTokenInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
 
-function clearFieldError(fieldWrapper) {
-  fieldWrapper.classList.remove("border", "border-red-300", "bg-red-50");
-  const input = fieldWrapper.querySelector("input, textarea, select");
-  if (input) input.classList.remove("ring-1", "ring-red-400", "border-red-400");
-  const err = fieldWrapper.querySelector(".client-error");
-  if (err) { err.textContent = ""; err.classList.add("hidden"); }
-}
-
-function setFieldError(fieldWrapper, msg) {
-  fieldWrapper.classList.add("border", "border-red-300", "bg-red-50");
-  const input = fieldWrapper.querySelector("input, textarea, select");
-  if (input) input.classList.add("ring-1", "ring-red-400", "border-red-400");
-  const err = fieldWrapper.querySelector(".client-error");
-  if (err) { err.textContent = msg; err.classList.remove("hidden"); }
-}
-
-function validateCurrentStep() {
-  const step = steps[currentStep];
-  let valid = true;
-  step.querySelectorAll(".field").forEach(clearFieldError);
-
-  step.querySelectorAll(".field").forEach(fieldWrapper => {
-    const required = fieldWrapper.dataset.required === "1";
-    if (!required) return;
-
-    const inputs = fieldWrapper.querySelectorAll("input, textarea, select");
-    if (!inputs.length) return;
-
-    const radios = fieldWrapper.querySelectorAll('input[type="radio"]');
-    const checks = fieldWrapper.querySelectorAll('input[type="checkbox"]');
-
-    if (radios.length) {
-      const name = radios[0].name;
-      const anyChecked = step.querySelectorAll(`input[type="radio"][name="${CSS.escape(name)}"]:checked`).length > 0;
-      if (!anyChecked) { setFieldError(fieldWrapper, "Selecciona una opción."); valid = false; }
-      return;
+    function clearFieldError(field) {
+        const fieldWrapper = field.closest('.field');
+        if (!fieldWrapper) return;
+        fieldWrapper.classList.remove("border", "border-red-300", "bg-red-50");
+        const input = fieldWrapper.querySelector("input, textarea, select");
+        if (input) input.classList.remove("ring-1", "ring-red-400", "border-red-400");
+        const err = fieldWrapper.querySelector(".client-error");
+        if (err) { err.textContent = ""; err.classList.add("hidden"); }
     }
 
-    if (checks.length) {
-      const anyChecked = Array.from(checks).some(c => c.checked);
-      if (!anyChecked) { setFieldError(fieldWrapper, "Selecciona al menos una opción."); valid = false; }
-      return;
+    function setFieldError(field, msg) {
+        const fieldWrapper = field.closest('.field');
+        if (!fieldWrapper) return;
+        fieldWrapper.classList.add("border", "border-red-300", "bg-red-50");
+        const input = fieldWrapper.querySelector("input, textarea, select");
+        if (input) input.classList.add("ring-1", "ring-red-400", "border-red-400");
+        const err = fieldWrapper.querySelector(".client-error");
+        if (err) { err.textContent = msg; err.classList.remove("hidden"); }
     }
 
-    inputs.forEach(input => {
-      if (input.type === "hidden") return;
-      const isEmpty = (input.value || "").trim() === "";
-      if (!input.checkValidity() || isEmpty) {
-        const label = fieldWrapper.querySelector("label")?.textContent?.replace("*","").trim() || "Este campo";
-        setFieldError(fieldWrapper, label + " es obligatorio o no es válido.");
-        valid = false;
-      }
-    });
-  });
+    function validateFields(fields) {
+        let valid = true;
+        fields.forEach(field => {
+            clearFieldError(field);
+            const required = field.closest('.field').dataset.required === '1';
+            if (!required) return;
 
-  if (!valid) {
-    const firstError = step.querySelector(".client-error:not(.hidden)");
-    if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-  return valid;
-}
+            const inputs = field.querySelectorAll("input, textarea, select");
+            if (!inputs.length) return;
 
-function updateProgressUI() {
-  const pct = Math.round(((currentStep + 1) / totalSteps) * 100);
-  progressBar.style.width = pct + "%";
-  percentText.textContent = pct + "%";
-  stepText.textContent = `Paso ${currentStep + 1} de ${totalSteps}`;
-  pills.forEach((pill, i) => {
-    if (i <= currentStep) {
-      pill.classList.add("bg-blue-100","text-blue-700","font-medium");
-      pill.classList.remove("bg-gray-100","text-gray-600");
-    } else {
-      pill.classList.add("bg-gray-100","text-gray-600");
-      pill.classList.remove("bg-blue-100","text-blue-700","font-medium");
-    }
-  });
-}
+            if (field.offsetParent === null) return; // Skip hidden fields
 
-function showStep(n) {
-  steps.forEach((s, i) => s.classList.toggle("hidden", i !== n));
-  prevBtn.classList.toggle("hidden", n === 0);
-  nextBtn.classList.toggle("hidden", n === totalSteps - 1);
-  submitBtn.classList.toggle("hidden", n !== totalSteps - 1);
-  updateProgressUI();
-}
+            const radios = field.querySelectorAll('input[type="radio"]');
+            if (radios.length) {
+                const name = radios[0].name;
+                if (!form.querySelector(`input[type="radio"][name="${CSS.escape(name)}"]:checked`)) {
+                    setFieldError(field, "Selecciona una opción.");
+                    valid = false;
+                }
+                return;
+            }
 
-prevBtn.addEventListener("click", () => {
-  if (currentStep > 0) {
-    currentStep--;
-    showStep(currentStep);
-  }
-});
-nextBtn.addEventListener("click", async () => {
-  if (!validateCurrentStep()) return;
+            const checks = field.querySelectorAll('input[type="checkbox"]');
+            if (checks.length) {
+                if (!Array.from(checks).some(c => c.checked)) {
+                    setFieldError(field, "Selecciona al menos una opción.");
+                    valid = false;
+                }
+                return;
+            }
 
-  if (currentStep === 0 && checkUrl) {
-    const identInput = form.querySelector('input[name="identificacion"]');
-    const docSelect = form.querySelector('select[name="document_type"]');
-    if (identInput && docSelect) {
-      const payload = new URLSearchParams();
-      payload.append('identificacion', (identInput.value || "").trim());
-      payload.append('document_type', docSelect.value || "");
-
-      try {
-        const response = await fetch(checkUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": csrfTokenInput ? csrfTokenInput.value : "",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-          body: payload.toString(),
+            inputs.forEach(input => {
+                if (input.type === "hidden") return;
+                if (!input.checkValidity() || (input.value || "").trim() === "") {
+                    const label = field.closest('.field').querySelector("label")?.textContent?.replace("*","").trim() || "Este campo";
+                    setFieldError(field, label + " es obligatorio o no es válido.");
+                    valid = false;
+                }
+            });
         });
-
-        const data = await response.json();
-        if (!data.valid) {
-          const message = data.message || "Esta persona ya respondio esta encuesta.";
-          const identField = identInput.closest('.field');
-          const docField = docSelect.closest('.field');
-          if (identField) setFieldError(identField, message);
-          //if (docField) setFieldError(docField, message);
-          identInput.focus();
-          return;
-        }
-      } catch (error) {
-        console.error('Error validating duplicate respondent', error);
-        const identField = identInput.closest('.field');
-        if (identField) setFieldError(identField, "No fue posible validar la informacion. Intenta de nuevo.");
-        return;
-      }
+        return valid;
     }
-  }
 
-  if (currentStep < totalSteps - 1) {
-    currentStep++;
+    function updateProgressUI() {
+        const pct = Math.round(((currentStep + 1) / totalSteps) * 100);
+        progressBar.style.width = pct + "%";
+        percentText.textContent = pct + "%";
+        stepText.textContent = `Paso ${currentStep + 1} de ${totalSteps}`;
+        pills.forEach((pill, i) => {
+            pill.classList.toggle("bg-blue-100", i <= currentStep);
+            pill.classList.toggle("text-blue-700", i <= currentStep);
+            pill.classList.toggle("font-medium", i <= currentStep);
+            pill.classList.toggle("bg-gray-100", i > currentStep);
+            pill.classList.toggle("text-gray-600", i > currentStep);
+        });
+    }
+
+    function showStep(n) {
+        steps.forEach((s, i) => s.classList.toggle("hidden", i !== n));
+        prevBtn.classList.toggle("hidden", n === 0);
+        nextBtn.classList.toggle("hidden", n === totalSteps - 1);
+        submitBtn.classList.toggle("hidden", n !== totalSteps - 1);
+        updateProgressUI();
+    }
+
+    prevBtn.addEventListener("click", () => {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    });
+
+    nextBtn.addEventListener("click", async () => {
+        const currentStepEl = steps[currentStep];
+        const pagedSection = currentStepEl.querySelector('.paged-section');
+
+        if (pagedSection) {
+            const pagedManager = pagedSection.pagedManager;
+            if (!pagedManager.isOnLastPage()) {
+                pagedManager.nextPage();
+                return;
+            }
+        }
+
+        const fieldsToValidate = Array.from(currentStepEl.querySelectorAll('.field-wrapper:not(.hidden) .field, .field:not(.field-wrapper .field)'));
+        if (!validateFields(fieldsToValidate)) return;
+
+        if (currentStep === 0 && checkUrl) {
+            const identInput = form.querySelector('input[name="identificacion"]');
+            const docSelect = form.querySelector('select[name="document_type"]');
+            if (identInput && docSelect) {
+                const payload = new URLSearchParams();
+                payload.append('identificacion', (identInput.value || "").trim());
+                payload.append('document_type', docSelect.value || "");
+
+                try {
+                    const response = await fetch(checkUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "X-CSRFToken": csrfTokenInput ? csrfTokenInput.value : "",
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                        body: payload.toString(),
+                    });
+
+                    const data = await response.json();
+                    if (!data.valid) {
+                        const message = data.message || "Esta persona ya respondio esta encuesta.";
+                        const identField = identInput.closest('.field');
+                        if (identField) setFieldError(identField, message);
+                        identInput.focus();
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error validating duplicate respondent', error);
+                    const identField = identInput.closest('.field');
+                    if (identField) setFieldError(identField, "No fue posible validar la informacion. Intenta de nuevo.");
+                    return;
+                }
+            }
+        }
+
+        if (currentStep < totalSteps - 1) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    });
+
+    form.addEventListener("submit", (e) => {
+        const fieldsToValidate = Array.from(form.querySelectorAll('.field'));
+        if (!validateFields(fieldsToValidate)) {
+            e.preventDefault();
+        }
+    });
+
+    document.querySelectorAll('.paged-section').forEach(section => {
+        const questionsPerPage = parseInt(section.dataset.questionsPerPage, 10) || 5;
+        const questions = Array.from(section.querySelectorAll('.field-wrapper'));
+        const totalPages = Math.ceil(questions.length / questionsPerPage);
+        let currentPage = 0;
+
+        const prevBtn = section.querySelector('.page-prev-btn');
+        const nextBtn = section.querySelector('.page-next-btn');
+        const pageCounter = section.querySelector('.page-counter');
+
+        const updatePageUI = () => {
+            questions.forEach((q, index) => {
+                q.classList.toggle('hidden', Math.floor(index / questionsPerPage) !== currentPage);
+            });
+            prevBtn.classList.toggle('hidden', currentPage === 0);
+            nextBtn.classList.toggle('hidden', currentPage === totalPages - 1);
+            pageCounter.textContent = `Página ${currentPage + 1} de ${totalPages}`;
+        };
+
+        const manager = {
+            nextPage: () => {
+                const fieldsToValidate = questions.slice(currentPage * questionsPerPage, (currentPage + 1) * questionsPerPage).map(qw => qw.querySelector('.field'));
+                if (validateFields(fieldsToValidate)) {
+                    if (currentPage < totalPages - 1) {
+                        currentPage++;
+                        updatePageUI();
+                    }
+                }
+            },
+            prevPage: () => {
+                if (currentPage > 0) {
+                    currentPage--;
+                    updatePageUI();
+                }
+            },
+            isOnLastPage: () => currentPage === totalPages - 1,
+        };
+
+        section.pagedManager = manager;
+        nextBtn.addEventListener('click', manager.nextPage);
+        prevBtn.addEventListener('click', manager.prevPage);
+        updatePageUI();
+    });
+
     showStep(currentStep);
-  }
 });
-
-
-form.addEventListener("submit", (e) => {
-  if (!validateCurrentStep()) e.preventDefault();
-});
-
-showStep(currentStep);
 </script>
 
 {% endblock %}
