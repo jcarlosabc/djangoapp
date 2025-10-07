@@ -75,11 +75,11 @@
     <h2 class="text-lg font-semibold mb-4 border-b pb-2">Sección {{ forloop.counter }}: {{ section.title }}</h2>
     
     {% with questions=form.visible_fields %}
-    {% if questions|length > 5 %}
-      <div class="paged-section" data-questions-per-page="5">
-        <div class="space-y-8">
+    {% if questions|length > 6 %}
+      <div class="paged-section" data-questions-per-page="6">
+        <div class="grid sm:grid-cols-2 gap-6">
           {% for field in questions %}
-            <div class="field-wrapper p-4 border rounded-lg bg-gray-50 {% if forloop.counter0 >= 5 %}hidden{% endif %}" data-question-index="{{ forloop.counter0 }}">
+            <div class="{% if field.field.question.qtype != 'single' and field.field.question.qtype != 'likert' and field.field.question.qtype != 'multi' and field.field.question.qtype != 'bool' %}p-4 border rounded-lg bg-gray-50{% endif %} {% if forloop.counter0 >= 6 %}hidden{% endif %} {% if field.field.question.qtype == 'text' %}sm:col-span-2{% endif %}" data-question-index="{{ forloop.counter0 }}">
               <div class="field" data-required="{{ field.field.required|yesno:'1,0' }}">
                 <label class="block text-base font-medium text-gray-800 mb-3">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
                 <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
@@ -98,9 +98,9 @@
         <div class="text-center text-sm text-gray-500 mt-2 page-counter"></div>
       </div>
     {% else %}
-      <div class="space-y-8">
+      <div class="grid sm:grid-cols-2 gap-6">
         {% for field in questions %}
-          <div class="field p-4 border rounded-lg bg-gray-50" data-required="{{ field.field.required|yesno:'1,0' }}">
+          <div class="field {% if field.field.question.qtype != 'single' and field.field.question.qtype != 'likert' and field.field.question.qtype != 'multi' and field.field.question.qtype != 'bool' %}p-4 border rounded-lg bg-gray-50{% endif %} {% if field.field.question.qtype == 'text' %}sm:col-span-2{% endif %}" data-required="{{ field.field.required|yesno:'1,0' }}">
             <label class="block text-base font-medium text-gray-800 mb-3">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
             <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
               {{ field }}
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('.paged-section').forEach(section => {
-        const questionsPerPage = parseInt(section.dataset.questionsPerPage, 10) || 5;
+        const questionsPerPage = parseInt(section.dataset.questionsPerPage, 10) || 6;
         const questions = Array.from(section.querySelectorAll('.field-wrapper'));
         const totalPages = Math.ceil(questions.length / questionsPerPage);
         let currentPage = 0;
