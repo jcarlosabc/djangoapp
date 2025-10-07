@@ -1,11 +1,18 @@
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv() # Load environment variables from .env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-demo'
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-demo') # Use os.environ.get for SECRET_KEY
+DEBUG = os.environ.get('DEBUG', 'True') == 'True' # Use os.environ.get for DEBUG
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') # Use os.environ.get for ALLOWED_HOSTS
+
+# New variable for data protection clause
+DATA_PROTECTION_CLAUSE_TEXT = os.environ.get('DATA_PROTECTION_CLAUSE_TEXT', 'Al continuar, usted acepta la recopilación y el uso de sus datos personales de acuerdo con nuestra política de privacidad. Sus datos serán utilizados únicamente para los fines de esta encuesta y no serán compartidos con terceros sin su consentimiento explícito.')
 
 INSTALLED_APPS = [
     'django.contrib.admin',

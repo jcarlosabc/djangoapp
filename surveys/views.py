@@ -7,6 +7,7 @@ from django.db import transaction, IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.conf import settings # Import settings
 
 from .forms import RespondentForm, build_answers_form_for_section
 from .models import Answer, QuestionType, ResponseSet, Survey
@@ -50,6 +51,15 @@ def survey_fill(request, code):
                     else:
                         rs.interviewer_id = None
                     rs.save()
+                    # Save data protection consent
+                    data_protection_consent = request.POST.get('data_protection_consent_value')
+                    if data_protection_consent == 'yes':
+                        rs.data_protection_accepted = True
+                    elif data_protection_consent == 'no':
+                        rs.data_protection_accepted = False
+                    else:
+                        rs.data_protection_accepted = False # Default or handle as error if needed
+                    rs.save() # Save again to update the new field
 
                     for section, form in section_forms:
                         for q in section.questions.all():
@@ -86,6 +96,7 @@ def survey_fill(request, code):
         "resp_form": resp_form,
         "sections_forms": section_forms,
         "public": not request.user.is_authenticated,
+        "data_protection_clause_text": settings.DATA_PROTECTION_CLAUSE_TEXT, # Pass the clause text to the template
     })
 
 @require_POST

@@ -89,6 +89,7 @@ class ResponseSet(models.Model):
     interviewer = models.ForeignKey(Interviewer, blank=True, null=True, on_delete=models.SET_NULL)
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
+    data_protection_accepted = models.BooleanField(default=False) # New field for data protection consent
     class Meta:
         unique_together = ("survey", "identificacion", "document_type")
         indexes = [models.Index(fields=["survey", "identificacion", "document_type"])]
