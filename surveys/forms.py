@@ -75,10 +75,15 @@ def build_answers_form_for_section(section):
         else:
             field = forms.CharField(**common)
 
+        field.question = q
+
         # Estilos para inputs normales
         if not isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):
             css = field.widget.attrs.get("class", "")
-            field.widget.attrs["class"] = (css + " w-full border rounded px-3 py-2").strip()
+            width_class = "w-full"
+            if q.qtype in (QuestionType.INTEGER, QuestionType.DECIMAL, QuestionType.DATE):
+                width_class = "w-auto"
+            field.widget.attrs["class"] = (css + f" {width_class} border rounded px-3 py-2").strip()
 
         fields[name] = field
 
