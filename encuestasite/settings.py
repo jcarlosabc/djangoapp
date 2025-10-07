@@ -46,6 +46,7 @@ TEMPLATES = [{
             'django.template.context_processors.request',
             'django.contrib.auth.context_processors.auth',
             'django.contrib.messages.context_processors.messages',
+            'django.template.context_processors.media', # Added for MEDIA_URL
         ],
     },
 }]
@@ -73,3 +74,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'surveys:list'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
