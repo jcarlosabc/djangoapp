@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelChoiceField, ModelMultipleChoiceField
-from .models import Question, Option, QuestionType, Barrio, Interviewer # Added Interviewer
+from .models import Question, Option, QuestionType, Municipio, Ubicacion, Interviewer # Added Interviewer
 
 class ResponseSetForm(forms.Form):
     identificacion = forms.CharField(max_length=30, label="Identificación")
@@ -84,22 +84,27 @@ def build_answers_form_for_section(section):
                     choices=choices,
                     widget=forms.CheckboxSelectMultiple,
                 )
-        elif q.qtype == QuestionType.BARRIO: # New BARRIO type handling
-            if q.max_choices == 1: # Single barrio selection
-                fields[field_name] = ModelChoiceField(
-                    queryset=q.barrios.all() if q.barrios.exists() else Barrio.objects.all(),
-                    label=q.text,
-                    help_text=q.help_text,
-                    required=q.required,
-                    empty_label="Selecciona un barrio",
-                )
-            else: # Multiple barrio selection
-                fields[field_name] = ModelMultipleChoiceField(
-                    queryset=q.barrios.all() if q.barrios.exists() else Barrio.objects.all(),
-                    label=q.text,
-                    help_text=q.help_text,
-                    required=q.required,
-                    widget=forms.SelectMultiple, # Changed from CheckboxSelectMultiple to SelectMultiple
-                )
-        # Removed the old geojson_file and geojson_property_name block
+        elif q.qtype == QuestionType.UBICACION: # New UBICACION type handling
+            fields[f"{field_name}_municipio"] = ModelChoiceField(
+                queryset=Municipio.objects.all(),
+                label="Municipio",
+                required=q.required,
+                empty_label="Selecciona un municipio",
+            )
+            fields[f"{field_name}_ubicacion"] = forms.ChoiceField(
+                label="Barrio/Localidad",
+                required=q.required,
+                choices=[],
+            )
+            fields[f"{field_name}_loc"] = forms.CharField(
+                label="LOC",
+                required=False, # This will be autopopulated
+                widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+            )
+            fields[f"{field_name}_zona"] = forms.CharField(
+                label="ZONA",
+                required=False, # This will be autopopulated
+                widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+            )
+
     return type(f"AnswersFormForSection{section.pk}", (forms.Form,), fields)

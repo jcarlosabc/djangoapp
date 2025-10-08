@@ -5,7 +5,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.urls import reverse
 from django.contrib import messages # <-- Añadido
-from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES
+from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES, Ubicacion, Municipio
 from .forms import ResponseSetForm, build_answers_form_for_section
 from .forms_signup import SignUpForm
 
@@ -86,14 +86,6 @@ def survey_fill(request, survey_code):
         respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
         answers_form_current_section = sections_forms[current_section_idx][1]
 
-        print(f"DEBUG: current_section_idx: {current_section_idx}")
-        print(f"DEBUG: respondent_form is_valid: {respondent_form.is_valid()}")
-        if not respondent_form.is_valid():
-            print(f"DEBUG: respondent_form errors: {respondent_form.errors}")
-        print(f"DEBUG: answers_form_current_section is_valid: {answers_form_current_section.is_valid()}")
-        if not answers_form_current_section.is_valid():
-            print(f"DEBUG: answers_form_current_section errors: {answers_form_current_section.errors}")
-
         if respondent_form.is_valid() and answers_form_current_section.is_valid():
             with transaction.atomic():
                 identificacion = respondent_form.cleaned_data['identificacion']
@@ -119,9 +111,11 @@ def survey_fill(request, survey_code):
                     response_set.save()
 
                 for question in current_section.questions.all():
-                    field_name = f"question_{question.pk}"
+                    if question.qtype == 'ubicacion':
+                        field_name = f"question_{question.pk}_ubicacion"
+                    else:
+                        field_name = f"question_{question.pk}"
                     answer_value = answers_form_current_section.cleaned_data.get(field_name)
-                    print(f"DEBUG: Question {question.pk} ({question.text}), answer_value: {answer_value}")
 
                     answer, _ = Answer.objects.update_or_create(
                         response=response_set,
@@ -141,29 +135,22 @@ def survey_fill(request, survey_code):
                             answer.options.set(answer_value)
                         else:
                             answer.options.clear()
-                    elif question.qtype == 'barrio':
+                    elif question.qtype == 'ubicacion':
                         if answer_value:
-                            if not isinstance(answer_value, list):
-                                answer_value = [answer_value]
-                            answer.selected_barrios.set(answer_value)
+                            answer.selected_ubicaciones.set([answer_value])
                         else:
-                            answer.selected_barrios.clear()
+                            answer.selected_ubicaciones.clear()
 
             next_section_idx = current_section_idx + 1
-            print(f"DEBUG: next_section_idx: {next_section_idx}, len(sections): {len(sections)}")
             if next_section_idx < len(sections):
                 url = reverse('surveys:fill', kwargs={'survey_code': survey_code})
-                print(f"DEBUG: Redirecting to next section: {url}?section={next_section_idx}")
                 return redirect(f"{url}?section={next_section_idx}")
             else:
                 messages.success(request, '¡Encuesta guardada exitosamente!')
-                print("DEBUG: Survey completed. Rendering survey_complete.html.")
                 return render(request, 'surveys/survey_complete.html', {'survey': survey})
         else:
             respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
-            print("DEBUG: Forms not valid, re-rendering current section.")
     else: # GET request
-        print("DEBUG: GET request. Initializing forms.")
         respondent_form = ResponseSetForm(document_types=DOCUMENT_TYPES)
 
     context = {
@@ -174,5 +161,14 @@ def survey_fill(request, survey_code):
         'current_section_idx': current_section_idx,
         'total_sections': len(sections),
     }
-    print("DEBUG: Rendering survey_fill_steps.html.")
     return render(request, 'surveys/survey_fill_steps.html', context)
+
+def get_ubicaciones(request):
+    municipio_id = request.GET.get('municipio_id')
+    ubicaciones = Ubicacion.objects.filter(municipio_id=municipio_id).order_by('nombre')
+    return JsonResponse(list(ubicaciones.values('id', 'nombre')), safe=False)
+
+def get_ubicacion_details(request):
+    ubicacion_id = request.GET.get('ubicacion_id')
+    ubicacion = get_object_or_404(Ubicacion, pk=ubicacion_id)
+    return JsonResponse({'loc': ubicacion.loc, 'zona': ubicacion.zona})

@@ -196,8 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Optionally, scroll to the top of the survey form
             window.scrollTo({ top: 0, behavior: 'smooth' });
             showStep(currentStep); // <--- ADDED THIS LINE
-        } else {
-            alert('Debe aceptar la cláusula de protección de datos para continuar.');
         }
     });
 
@@ -325,9 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fieldsToValidate = Array.from(currentStepEl.querySelectorAll('.field-wrapper:not(.hidden) .field, .field:not(.field-wrapper .field)'));
         const isValidClientSide = validateFields(fieldsToValidate);
-        console.log('Client-side validation result:', isValidClientSide);
         if (!isValidClientSide) {
-            console.log('Client-side validation failed. Check for visible error messages on the form.');
             return;
         }
 
@@ -351,20 +347,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     const data = await response.json();
-                    console.log('Duplicate respondent check response:', data);
                     if (!data.valid) {
                         const message = data.message || "Esta persona ya respondio esta encuesta.";
                         const identField = identInput.closest('.field');
                         if (identField) setFieldError(identField, message);
                         identInput.focus();
-                        console.log('Duplicate respondent detected. Message displayed:', message);
                         return;
                     }
                 } catch (error) {
                     console.error('Error validating duplicate respondent', error);
                     const identField = identInput.closest('.field');
                     if (identField) setFieldError(identField, "No fue posible validar la informacion. Intenta de nuevo.");
-                    console.log('Error during duplicate respondent check. Message displayed.');
                     return;
                 }
             }
@@ -373,10 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentStep < totalSteps - 1) {
             currentStep++;
             showStep(currentStep);
-            console.log('Advancing to next step:', currentStep);
-        } else {
-            console.log('Reached last step. Please click the "Enviar" button to submit the survey.');
-        }
+        } 
     });
 
     form.addEventListener("submit", (e) => {
@@ -430,6 +420,48 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePageUI();
     });
 
+    // Ubicacion cascading dropdowns
+    document.querySelectorAll('select[name$="_municipio"]').forEach(municipioSelect => {
+        const questionId = municipioSelect.name.split('_')[1];
+        const ubicacionSelect = document.querySelector(`select[name="question_${questionId}_ubicacion"]`);
+        const locInput = document.querySelector(`input[name="question_${questionId}_loc"]`);
+        const zonaInput = document.querySelector(`input[name="question_${questionId}_zona"]`);
+
+        municipioSelect.addEventListener('change', () => {
+            const municipioId = municipioSelect.value;
+            ubicacionSelect.innerHTML = '<option value="">Cargando...</option>';
+            locInput.value = '';
+            zonaInput.value = '';
+
+            if (municipioId) {
+                fetch(`{% url 'surveys:get_ubicaciones' %}?municipio_id=${municipioId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        ubicacionSelect.innerHTML = '<option value="">Selecciona una ubicación</option>';
+                        data.forEach(ubicacion => {
+                            ubicacionSelect.innerHTML += `<option value="${ubicacion.id}">${ubicacion.nombre}</option>`;
+                        });
+                    });
+            } else {
+                ubicacionSelect.innerHTML = '<option value="">Selecciona un municipio primero</option>';
+            }
+        });
+
+        ubicacionSelect.addEventListener('change', () => {
+            const ubicacionId = ubicacionSelect.value;
+            locInput.value = '';
+            zonaInput.value = '';
+
+            if (ubicacionId) {
+                fetch(`{% url 'surveys:get_ubicacion_details' %}?ubicacion_id=${ubicacionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        locInput.value = data.loc;
+                        zonaInput.value = data.zona;
+                    });
+            }
+        });
+    });
 });
 </script>
 

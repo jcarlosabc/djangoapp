@@ -12,4 +12,7 @@ urlpatterns = [
     path("signup/", views.signup, name="signup"),
     path("login/", auth_views.LoginView.as_view(template_name="surveys/auth_login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    # AJAX
+    path('ajax/get_ubicaciones/', views.get_ubicaciones, name='get_ubicaciones'),
+    path('ajax/get_ubicacion_details/', views.get_ubicacion_details, name='get_ubicacion_details'),
 ]

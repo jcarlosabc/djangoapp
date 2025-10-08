@@ -12,7 +12,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True' # Use os.environ.get for DEBUG
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') # Use os.environ.get for ALLOWED_HOSTS
 
 # New variable for data protection clause
-DATA_PROTECTION_CLAUSE_TEXT = os.environ.get('DATA_PROTECTION_CLAUSE_TEXT', 'Al continuar, usted acepta la recopilación y el uso de sus datos personales de acuerdo con nuestra política de privacidad. Sus datos serán utilizados únicamente para los fines de esta encuesta y no serán compartidos con terceros sin su consentimiento explícito.')
+DATA_PROTECTION_CLAUSE_TEXT = os.environ.get('DATA_PROTECTION_CLAUSE_TEXT')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
