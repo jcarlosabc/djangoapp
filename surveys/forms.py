@@ -107,4 +107,31 @@ def build_answers_form_for_section(section):
                 widget=forms.TextInput(attrs={'readonly': 'readonly'}),
             )
 
-    return type(f"AnswersFormForSection{section.pk}", (forms.Form,), fields)
+    class DynamicAnswersForm(forms.Form):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            for field_name, field in self.fields.items():
+                if isinstance(field.widget, (forms.TextInput, forms.Textarea, forms.DateInput, forms.Select)):\
+                    field.widget.attrs.update({"class": "form-control"})
+                elif isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):\
+                    field.widget.attrs.update({"class": "form-check-input"})
+
+            # Dynamic choices for ubicacion fields
+            for q in section.questions.all():
+                if q.qtype == QuestionType.UBICACION:
+                    field_name = f"question_{q.pk}"
+                    municipio_field_name = f"{field_name}_municipio"
+                    ubicacion_field_name = f"{field_name}_ubicacion"
+
+                    if municipio_field_name in self.fields and ubicacion_field_name in self.fields:
+                        # If form is submitted, try to get municipio from data
+                        if self.is_bound and self.data.get(municipio_field_name):
+                            try:
+                                municipio_id = int(self.data.get(municipio_field_name))
+                                ubicaciones = Ubicacion.objects.filter(municipio_id=municipio_id).order_by('nombre')
+                                self.fields[ubicacion_field_name].choices = [(u.pk, u.nombre) for u in ubicaciones]
+                            except (ValueError, TypeError):
+                                pass # Handle cases where municipio_id is not a valid integer
+
+    DynamicAnswersForm.base_fields = fields
+    return DynamicAnswersForm
