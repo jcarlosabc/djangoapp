@@ -1,139 +1,178 @@
-﻿
-from django.contrib import messages
-from django.contrib.auth import login
+﻿from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.db import transaction, IntegrityError
-from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth import login
+from django.db import transaction
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.conf import settings # Import settings
-
-from .forms import RespondentForm, build_answers_form_for_section
-from .models import Answer, QuestionType, ResponseSet, Survey
-
-def survey_list_public(request):
-    surveys = Survey.objects.filter(is_active=True).order_by("-created_at")
-    return render(request, "surveys/survey_list.html", {"surveys": surveys, "public": True})
-
-@login_required
-def survey_list(request):
-    surveys = Survey.objects.filter(is_active=True).order_by("-created_at")
-    return render(request, "surveys/survey_list.html", {"surveys": surveys})
-
-def survey_fill(request, code):
-    survey = get_object_or_404(Survey, code=code, is_active=True)
-    show_interviewer = request.user.is_authenticated
-
-    section_forms = []
-    for section in survey.sections.all():
-        AnswersForm = build_answers_form_for_section(section)
-        if request.method == "POST":
-            form = AnswersForm(request.POST, prefix=f"sec{section.id}")
-        else:
-            form = AnswersForm(prefix=f"sec{section.id}")
-        section_forms.append((section, form))
-
-    if request.method == "POST":
-        resp_form = RespondentForm(request.POST, survey=survey, show_interviewer=show_interviewer)
-    else:
-        resp_form = RespondentForm(survey=survey, show_interviewer=show_interviewer)
-
-    if request.method == "POST":
-        all_valid = resp_form.is_valid() and all(f.is_valid() for _, f in section_forms)
-        if all_valid:
-            try:
-                with transaction.atomic():
-                    rs = resp_form.save(commit=False)
-                    rs.survey = survey
-                    if request.user.is_authenticated:
-                        rs.user = request.user
-                    else:
-                        rs.interviewer_id = None
-                    rs.save()
-                    # Save data protection consent
-                    data_protection_consent = request.POST.get('data_protection_consent_value')
-                    if data_protection_consent == 'yes':
-                        rs.data_protection_accepted = True
-                    elif data_protection_consent == 'no':
-                        rs.data_protection_accepted = False
-                    else:
-                        rs.data_protection_accepted = False # Default or handle as error if needed
-                    rs.save() # Save again to update the new field
-
-                    for section, form in section_forms:
-                        for q in section.questions.all():
-                            name = f"q_{q.id}"
-                            val = form.cleaned_data.get(name)
-                            ans = Answer.objects.create(response=rs, question=q)
-
-                            if q.qtype in (QuestionType.SINGLE, QuestionType.LIKERT):
-                                if val: ans.options.set([int(val)])
-                            elif q.qtype == QuestionType.MULTI:
-                                ids = [int(v) for v in (val or [])]
-                                if ids: ans.options.set(ids)
-                            elif q.qtype == QuestionType.TEXT:
-                                ans.text_answer = val or ""
-                            elif q.qtype == QuestionType.INTEGER:
-                                ans.integer_answer = val
-                            elif q.qtype == QuestionType.DECIMAL:
-                                ans.decimal_answer = val
-                            elif q.qtype == QuestionType.BOOL:
-                                ans.bool_answer = val
-                            elif q.qtype == QuestionType.DATE:
-                                ans.date_answer = val
-                            ans.full_clean()
-                            ans.save()
-
-            except IntegrityError:
-                messages.error(request, "Registro duplicado: esta persona ya respondiÃ³ esta encuesta.")
-            else:
-                messages.success(request, "Â¡Gracias! Respuesta registrada correctamente.")
-                return redirect("surveys:list")
-
-    return render(request, "surveys/survey_fill_steps.html", {
-        "survey": survey,
-        "resp_form": resp_form,
-        "sections_forms": section_forms,
-        "public": not request.user.is_authenticated,
-        "data_protection_clause_text": settings.DATA_PROTECTION_CLAUSE_TEXT, # Pass the clause text to the template
-    })
-
-@require_POST
-def check_duplicate_respondent(request, code):
-    survey = get_object_or_404(Survey, code=code, is_active=True)
-    ident = (request.POST.get("identificacion") or "").strip()
-    doc_type = (request.POST.get("document_type") or "").strip()
-    if not ident or not doc_type:
-        return JsonResponse(
-            {
-                "valid": False,
-                "message": "Debes ingresar la identificacion y el tipo de documento.",
-            },
-            status=400,
-        )
-    exists = ResponseSet.objects.filter(
-        survey=survey,
-        identificacion=ident,
-        document_type=doc_type,
-    ).exists()
-    if exists:
-        return JsonResponse(
-            {
-                "valid": False,
-                "message": "Esta persona ya respondio esta encuesta (no se permite duplicidad).",
-            }
-        )
-    return JsonResponse({"valid": True})
+from django.urls import reverse
+from django.contrib import messages # <-- Añadido
+from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES
+from .forms import ResponseSetForm, build_answers_form_for_section
+from .forms_signup import SignUpForm
 
 def signup(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect("surveys:list")
+            return redirect('surveys:list')
     else:
-        form = UserCreationForm()
-    return render(request, "surveys/auth_signup.html", {"form": form})
+        form = SignUpForm()
+    return render(request, 'surveys/auth_signup.html', {'form': form})
 
+def survey_list_public(request): # New public survey list view
+    surveys = Survey.objects.filter(is_active=True)
+    return render(request, 'surveys/survey_list.html', {'surveys': surveys})
+
+@login_required
+def survey_list(request):
+    surveys = Survey.objects.filter(is_active=True)
+    return render(request, 'surveys/survey_list.html', {'surveys': surveys})
+
+def check_duplicate_respondent(request, survey_code):
+    if request.method == 'POST':
+        identificacion = request.POST.get('identificacion', '').strip()
+        document_type = request.POST.get('document_type', '').strip()
+        
+        # Validar que ambos campos estén presentes
+        if not identificacion or not document_type:
+            return JsonResponse({
+                'valid': False,
+                'message': 'Debes proporcionar el documento y tipo de documento.'
+            })
+        
+        # Get the survey instance
+        survey = get_object_or_404(Survey, code=survey_code)
+
+        # Check if a ResponseSet already exists for this survey, identification, and document type
+        is_duplicate = ResponseSet.objects.filter(
+            survey=survey,
+            identificacion=identificacion,
+            document_type=document_type
+        ).exists()
+        
+        # Retornar 'valid' (no 'is_duplicate') - válido si NO es duplicado
+        return JsonResponse({
+            'valid': not is_duplicate,  # ← Cambio importante: invertir la lógica
+            'message': 'Esta persona ya respondió esta encuesta.' if is_duplicate else ''
+        })
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+@login_required
+def survey_fill(request, survey_code):
+    print("DEBUG: survey_fill function called.")
+    survey = get_object_or_404(Survey, code=survey_code, is_active=True)
+    sections = survey.sections.all()
+    current_section_idx = int(request.GET.get('section', 0))
+
+    if not sections.exists() or current_section_idx >= len(sections):
+        print("DEBUG: Redirecting to survey list (sections not exist or current_section_idx out of bounds).")
+        return redirect('surveys:list')
+
+    current_section = sections[current_section_idx]
+
+    sections_forms = []
+    for i, section_obj in enumerate(sections):
+        AnswersForm = build_answers_form_for_section(section_obj)
+        if i == current_section_idx and request.method == 'POST':
+            form_instance = AnswersForm(request.POST)
+        else:
+            form_instance = AnswersForm()
+        sections_forms.append((section_obj, form_instance))
+
+    if request.method == 'POST':
+        respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
+        answers_form_current_section = sections_forms[current_section_idx][1]
+
+        print(f"DEBUG: current_section_idx: {current_section_idx}")
+        print(f"DEBUG: respondent_form is_valid: {respondent_form.is_valid()}")
+        if not respondent_form.is_valid():
+            print(f"DEBUG: respondent_form errors: {respondent_form.errors}")
+        print(f"DEBUG: answers_form_current_section is_valid: {answers_form_current_section.is_valid()}")
+        if not answers_form_current_section.is_valid():
+            print(f"DEBUG: answers_form_current_section errors: {answers_form_current_section.errors}")
+
+        if respondent_form.is_valid() and answers_form_current_section.is_valid():
+            with transaction.atomic():
+                identificacion = respondent_form.cleaned_data['identificacion']
+                document_type = respondent_form.cleaned_data['document_type']
+                response_set, created = ResponseSet.objects.get_or_create(
+                    survey=survey,
+                    identificacion=identificacion,
+                    document_type=document_type,
+                    defaults={
+                        'full_name': respondent_form.cleaned_data['full_name'],
+                        'email': respondent_form.cleaned_data['email'],
+                        'phone': respondent_form.cleaned_data['phone'],
+                        'user': request.user,
+                        'interviewer': respondent_form.cleaned_data.get('interviewer'),
+                    }
+                )
+                if not created:
+                    response_set.full_name = respondent_form.cleaned_data['full_name']
+                    response_set.email = respondent_form.cleaned_data['email']
+                    response_set.phone = respondent_form.cleaned_data['phone']
+                    response_set.user = request.user
+                    response_set.interviewer = respondent_form.cleaned_data.get('interviewer')
+                    response_set.save()
+
+                for question in current_section.questions.all():
+                    field_name = f"question_{question.pk}"
+                    answer_value = answers_form_current_section.cleaned_data.get(field_name)
+                    print(f"DEBUG: Question {question.pk} ({question.text}), answer_value: {answer_value}")
+
+                    answer, _ = Answer.objects.update_or_create(
+                        response=response_set,
+                        question=question,
+                        defaults={
+                            'text_answer': answer_value if question.qtype == 'text' else '',
+                            'integer_answer': answer_value if question.qtype == 'int' else None,
+                            'decimal_answer': answer_value if question.qtype == 'dec' else None,
+                            'bool_answer': answer_value if question.qtype == 'bool' else None,
+                            'date_answer': answer_value if question.qtype == 'date' else None,
+                        }
+                    )
+                    if question.qtype in ['single', 'multi', 'likert']:
+                        if answer_value:
+                            if not isinstance(answer_value, list):
+                                answer_value = [answer_value]
+                            answer.options.set(answer_value)
+                        else:
+                            answer.options.clear()
+                    elif question.qtype == 'barrio':
+                        if answer_value:
+                            if not isinstance(answer_value, list):
+                                answer_value = [answer_value]
+                            answer.selected_barrios.set(answer_value)
+                        else:
+                            answer.selected_barrios.clear()
+
+            next_section_idx = current_section_idx + 1
+            print(f"DEBUG: next_section_idx: {next_section_idx}, len(sections): {len(sections)}")
+            if next_section_idx < len(sections):
+                url = reverse('surveys:fill', kwargs={'survey_code': survey_code})
+                print(f"DEBUG: Redirecting to next section: {url}?section={next_section_idx}")
+                return redirect(f"{url}?section={next_section_idx}")
+            else:
+                messages.success(request, '¡Encuesta guardada exitosamente!')
+                print("DEBUG: Survey completed. Rendering survey_complete.html.")
+                return render(request, 'surveys/survey_complete.html', {'survey': survey})
+        else:
+            respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
+            print("DEBUG: Forms not valid, re-rendering current section.")
+    else: # GET request
+        print("DEBUG: GET request. Initializing forms.")
+        respondent_form = ResponseSetForm(document_types=DOCUMENT_TYPES)
+
+    context = {
+        'survey': survey,
+        'section': current_section,
+        'respondent_form': respondent_form,
+        'sections_forms': sections_forms,
+        'current_section_idx': current_section_idx,
+        'total_sections': len(sections),
+    }
+    print("DEBUG: Rendering survey_fill_steps.html.")
+    return render(request, 'surveys/survey_fill_steps.html', context)

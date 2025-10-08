@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -44,6 +43,19 @@ class QuestionType(models.TextChoices):
     BOOL   = "bool",   "Sí/No"
     DATE   = "date",   "Fecha"
     LIKERT = "likert", "Likert (0..4)"
+    BARRIO = "barrio", "Selección de Barrio(s)" # New type for barrio selection
+
+class Barrio(models.Model):
+    code = models.CharField(max_length=50, unique=True, null=True, blank=True) # Making code unique as it's the key
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+    class Meta:
+        verbose_name = "Barrio"
+        verbose_name_plural = "Barrios"
+        ordering = ['name']
 
 class Question(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="questions")
@@ -54,6 +66,9 @@ class Question(models.Model):
     required = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=1)
     max_choices = models.PositiveIntegerField(default=0, help_text="0 = sin límite")
+    # New field for linking to Barrio model
+    barrios = models.ManyToManyField(Barrio, blank=True, related_name="questions")
+
     class Meta:
         unique_together = ("section", "code")
         ordering = ["section__order", "order"]
@@ -104,6 +119,9 @@ class Answer(models.Model):
     bool_answer = models.BooleanField(null=True, blank=True)
     date_answer = models.DateField(null=True, blank=True)
     options = models.ManyToManyField(Option, blank=True, related_name="selected_in")
+    # New field to store selected Barrio(s) for BARRIO type questions
+    selected_barrios = models.ManyToManyField(Barrio, blank=True, related_name="answers")
+
     class Meta:
         unique_together = ("response", "question")
     def __str__(self): return f"{self.response} · {self.question.code}"
@@ -117,6 +135,7 @@ class Answer(models.Model):
             or self.bool_answer is not None
             or self.date_answer is not None
             or (self.pk and self.options.exists())
+            or (self.pk and self.selected_barrios.exists()) # Check for selected barrios
         )
         if q.required and not has_value:
             raise ValidationError(f"La pregunta '{q.code}' es obligatoria.")
@@ -129,3 +148,20 @@ class Answer(models.Model):
             for o in self.options.all():
                 if o.numeric_value is None:
                     raise ValidationError(f"Opción '{o.code}' en '{q.code}' no tiene valor numérico.")
+        # Validation for BARRIO type questions
+        if q.qtype == QuestionType.BARRIO:
+            if q.required and not self.selected_barrios.exists():
+                raise ValidationError(f"La pregunta '{q.code}' requiere la selección de al menos un barrio.")
+            # If max_choices is used for BARRIO type
+            if q.max_choices and self.pk and self.selected_barrios.count() > q.max_choices:
+                raise ValidationError(f"'{q.code}' admite máximo {q.max_choices} selecciones de barrios.")
+
+
+# New model for .xlsx file handling
+class BarrioListFile(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    file = models.FileField(upload_to='barrio_list_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
