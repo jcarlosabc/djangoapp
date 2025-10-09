@@ -1,4 +1,5 @@
-﻿from django.shortcuts import render, get_object_or_404, redirect
+﻿from django.conf import settings # Added
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.db import transaction
@@ -103,7 +104,8 @@ def survey_fill(request, survey_code):
                     'survey': survey,
                     'respondent_form': respondent_form,
                     'is_respondent_step': True,
-                    'consent_error': 'Debes aceptar la cláusula de protección de datos para continuar.'
+                    'consent_error': 'Debes aceptar la cláusula de protección de datos para continuar.',
+                    'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
                 }
                 return render(request, 'surveys/survey_fill_steps.html', context)
 
@@ -118,6 +120,7 @@ def survey_fill(request, survey_code):
                     'survey': survey,
                     'respondent_form': respondent_form,
                     'is_respondent_step': True,
+                    'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
                 }
                 return render(request, 'surveys/survey_fill_steps.html', context)
         else:
@@ -199,6 +202,7 @@ def survey_fill(request, survey_code):
                     'current_section_idx': current_section_idx,
                     'total_sections': len(sections),
                     'is_respondent_step': False,
+                    'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
                 }
                 return render(request, 'surveys/survey_fill_steps.html', context)
 
@@ -209,6 +213,7 @@ def survey_fill(request, survey_code):
             'survey': survey,
             'respondent_form': respondent_form,
             'is_respondent_step': True,
+            'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
         }
     else:
         current_section_idx = int(request.GET.get('section', 0))
@@ -225,6 +230,7 @@ def survey_fill(request, survey_code):
             'current_section_idx': current_section_idx,
             'total_sections': len(sections),
             'is_respondent_step': False,
+            'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
         }
     
     return render(request, 'surveys/survey_fill_steps.html', context)
