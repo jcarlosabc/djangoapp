@@ -1,0 +1,1114 @@
+[
+  {
+    "model": "surveys.survey",
+    "pk": 300,
+    "fields": {
+      "name": "Encuesta de Caracterización y Registro de Cuidadores (from PDF)",
+      "description": "Generado a partir del archivo ENCUESTA CARACTERIZACIÓN Y REGISTRO CUIDADORES.pdf",
+      "code": "caracterizacion-cuidadores-pdf",
+      "is_active": true,
+      "created_at": "2025-10-08T12:00:00Z",
+      "require_token": false
+    }
+  },
+  {
+    "model": "surveys.section",
+    "pk": 301,
+    "fields": {
+      "survey": 300,
+      "title": "DATOS SOCIODEMOGRÁFICOS",
+      "order": 1
+    }
+  },
+  {
+    "model": "surveys.section",
+    "pk": 302,
+    "fields": {
+      "survey": 300,
+      "title": "ACTIVIDADES DE CUIDADO",
+      "order": 2
+    }
+  },
+  {
+    "model": "surveys.section",
+    "pk": 303,
+    "fields": {
+      "survey": 300,
+      "title": "SALUD DEL CUIDADOR",
+      "order": 3
+    }
+  },
+  {
+    "model": "surveys.section",
+    "pk": 304,
+    "fields": {
+      "survey": 300,
+      "title": "ORGANIZACIONES Y/O GRUPOS DE CUIDADO",
+      "order": 4
+    }
+  },
+  {
+    "model": "surveys.section",
+    "pk": 305,
+    "fields": {
+      "survey": 300,
+      "title": "ESCALA ZARIT (NIVEL SOBRECARGA DEL CUIDADOR)",
+      "order": 5
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 401,
+    "fields": {
+      "section": 301,
+      "code": "nombre-completo",
+      "text": "Nombre completo",
+      "help_text": "",
+      "qtype": "text",
+      "required": true,
+      "order": 1,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 402,
+    "fields": {
+      "section": 301,
+      "code": "barrio",
+      "text": "Barrio",
+      "help_text": "",
+      "qtype": "text",
+      "required": true,
+      "order": 2,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 403,
+    "fields": {
+      "section": 301,
+      "code": "edad",
+      "text": "Edad",
+      "help_text": "",
+      "qtype": "int",
+      "required": true,
+      "order": 3,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 404,
+    "fields": {
+      "section": 301,
+      "code": "sexo",
+      "text": "Sexo",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 4,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 501,
+    "fields": { "question": 404, "code": "hombre", "label": "Hombre", "order": 1, "numeric_value": null }
+  },
+  {
+    "model": "surveys.option",
+    "pk": 502,
+    "fields": { "question": 404, "code": "mujer", "label": "Mujer", "order": 2, "numeric_value": null }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 405,
+    "fields": {
+      "section": 301,
+      "code": "identidad-genero",
+      "text": "Identidad de genero",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 5,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 503, "fields": { "question": 405, "code": "cisgenero", "label": "Cisgénero", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 504, "fields": { "question": 405, "code": "transgenero", "label": "Transgénero", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 505, "fields": { "question": 405, "code": "intersexual", "label": "Intersexual", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 506, "fields": { "question": 405, "code": "queer", "label": "Queer", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 507, "fields": { "question": 405, "code": "genero-fluido", "label": "Genero fluido", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 508, "fields": { "question": 405, "code": "binario", "label": "Binario", "order": 6, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 406,
+    "fields": {
+      "section": 301,
+      "code": "orientacion-sexual",
+      "text": "Orientación sexual",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 6,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 509, "fields": { "question": 406, "code": "heterosexual", "label": "Heterosexual", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 510, "fields": { "question": 406, "code": "gay", "label": "Gay", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 511, "fields": { "question": 406, "code": "bisexual", "label": "Bisexual", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 512, "fields": { "question": 406, "code": "lesbiana", "label": "Lesbiana", "order": 4, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 407,
+    "fields": {
+      "section": 301,
+      "code": "cultura-rasgo-fisico",
+      "text": "De acuerdo con su cultura, rasgo físico es o se reconoce como:",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 7,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 513, "fields": { "question": 407, "code": "indigena", "label": "Indígena", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 514, "fields": { "question": 407, "code": "raizal", "label": "Raizal", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 515, "fields": { "question": 407, "code": "rom-gitano", "label": "Rom/Gitano", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 516, "fields": { "question": 407, "code": "afrodescendiente", "label": "Afrodescendiente", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 517, "fields": { "question": 407, "code": "negro", "label": "Negro", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 518, "fields": { "question": 407, "code": "mestizo", "label": "Mestizo", "order": 6, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 519, "fields": { "question": 407, "code": "ninguno", "label": "Ninguno", "order": 7, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 520, "fields": { "question": 407, "code": "otro", "label": "Otro", "order": 8, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 408,
+    "fields": {
+      "section": 301,
+      "code": "numero-hijos",
+      "text": "Numero de hijos",
+      "help_text": "",
+      "qtype": "int",
+      "required": true,
+      "order": 8,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 409,
+    "fields": {
+      "section": 301,
+      "code": "ocupacion",
+      "text": "Ocupación",
+      "help_text": "",
+      "qtype": "multi",
+      "required": true,
+      "order": 9,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 521, "fields": { "question": 409, "code": "blower-peinado", "label": "Blower y/o peinado", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 522, "fields": { "question": 409, "code": "manicure-pedicura", "label": "Manicure y pedicura", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 523, "fields": { "question": 409, "code": "trenzado-cejas-pestanas", "label": "Trenzado, cejas y pestañas", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 524, "fields": { "question": 409, "code": "gastronomia-reposteria", "label": "Gastronomía/Reposteria", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 525, "fields": { "question": 409, "code": "confecciones", "label": "Confecciones", "order": 5, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 410,
+    "fields": {
+      "section": 301,
+      "code": "grado-educacion",
+      "text": "Grado de educación",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 10,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 526, "fields": { "question": 410, "code": "primaria-completa", "label": "Primaria completa", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 527, "fields": { "question": 410, "code": "primaria-incompleta", "label": "Primaria incompleta", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 528, "fields": { "question": 410, "code": "secundaria-completa", "label": "Secundaria completa", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 529, "fields": { "question": 410, "code": "secundaria-incompleta", "label": "Secundaria incompleta", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 530, "fields": { "question": 410, "code": "tecnico", "label": "Técnico", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 531, "fields": { "question": 410, "code": "tecnologo", "label": "Tecnólogo", "order": 6, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 532, "fields": { "question": 410, "code": "universitario", "label": "Universitario", "order": 7, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 533, "fields": { "question": 410, "code": "posgrado", "label": "Posgrado", "order": 8, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 534, "fields": { "question": 410, "code": "ninguno", "label": "Ninguno", "order": 9, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 411,
+    "fields": {
+      "section": 301,
+      "code": "estado-civil",
+      "text": "Estado Civil",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 11,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 535, "fields": { "question": 411, "code": "casada", "label": "Casada", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 536, "fields": { "question": 411, "code": "union-libre", "label": "Unión Libre", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 537, "fields": { "question": 411, "code": "soltera", "label": "Soltera", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 538, "fields": { "question": 411, "code": "viuda", "label": "Viuda", "order": 4, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 412,
+    "fields": {
+      "section": 301,
+      "code": "estrato",
+      "text": "Estrato",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 12,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 539, "fields": { "question": 412, "code": "1", "label": "1", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 540, "fields": { "question": 412, "code": "2", "label": "2", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 541, "fields": { "question": 412, "code": "3", "label": "3", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 542, "fields": { "question": 412, "code": "4", "label": "4", "order": 4, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 413,
+    "fields": {
+      "section": 301,
+      "code": "tipo-familia",
+      "text": "Tipo de familia",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 13,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 543, "fields": { "question": 413, "code": "nuclear", "label": "Nuclear", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 544, "fields": { "question": 413, "code": "extensa", "label": "Extensa", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 545, "fields": { "question": 413, "code": "incompleta", "label": "Incompleta", "order": 3, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 414,
+    "fields": {
+      "section": 301,
+      "code": "regimen",
+      "text": "Régimen",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 14,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 546, "fields": { "question": 414, "code": "contributivo", "label": "Contributivo", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 547, "fields": { "question": 414, "code": "subsidiado", "label": "Subsidiado", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 548, "fields": { "question": 414, "code": "especial", "label": "Especial", "order": 3, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 415,
+    "fields": {
+      "section": 301,
+      "code": "eps",
+      "text": "EPS",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 15,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 549, "fields": { "question": 415, "code": "mutualser", "label": "Mutualser", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 550, "fields": { "question": 415, "code": "coosalud", "label": "Coosalud", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 551, "fields": { "question": 415, "code": "nuevaeps", "label": "NuevaEPS", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 552, "fields": { "question": 415, "code": "cajacopi", "label": "Cajacopi", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 553, "fields": { "question": 415, "code": "sura", "label": "Sura", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 554, "fields": { "question": 415, "code": "sanitas", "label": "Sanitas", "order": 6, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 555, "fields": { "question": 415, "code": "policia-armada-nacional", "label": "Policía o Armada Nacional", "order": 7, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 416,
+    "fields": {
+      "section": 301,
+      "code": "num-personas-hogar",
+      "text": "Numero de personas en el hogar",
+      "help_text": "",
+      "qtype": "int",
+      "required": true,
+      "order": 16,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 417,
+    "fields": {
+      "section": 302,
+      "code": "cuantas-personas-cuida",
+      "text": "¿Cuántas personas cuida actualmente?",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 1,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 556, "fields": { "question": 417, "code": "1", "label": "1", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 557, "fields": { "question": 417, "code": "2", "label": "2", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 558, "fields": { "question": 417, "code": "3", "label": "3", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 559, "fields": { "question": 417, "code": "4", "label": "4", "order": 4, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 418,
+    "fields": {
+      "section": 302,
+      "code": "grupo-persona-cuidada",
+      "text": "¿A cuál de los siguientes grupos pertenece la persona que usted cuida actualmente?",
+      "help_text": "",
+      "qtype": "multi",
+      "required": true,
+      "order": 2,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 560, "fields": { "question": 418, "code": "nina-nino-primera-infancia", "label": "Niña o niño en primera infancia (0 a 5 años)", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 561, "fields": { "question": 418, "code": "adolescente", "label": "Adolescente", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 562, "fields": { "question": 418, "code": "adulto-mayor-60-anos", "label": "Adulto mayor de 60 años", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 563, "fields": { "question": 418, "code": "persona-discapacidad", "label": "Persona con discapacidad", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 564, "fields": { "question": 418, "code": "personas-trastornos-mentales", "label": "Personas con trastornos mentales", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 565, "fields": { "question": 418, "code": "otro-cual", "label": "Otro ¿Cuál?", "order": 6, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 419,
+    "fields": {
+      "section": 302,
+      "code": "tipo-discapacidad",
+      "text": "En caso de ser cuidador de persona con discapacidad, indica el tipo:",
+      "help_text": "",
+      "qtype": "multi",
+      "required": false,
+      "order": 3,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 566, "fields": { "question": 419, "code": "fisica", "label": "Física", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 567, "fields": { "question": 419, "code": "auditiva", "label": "Auditiva", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 568, "fields": { "question": 419, "code": "cognitiva", "label": "Cognitiva", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 569, "fields": { "question": 419, "code": "visual", "label": "Visual", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 570, "fields": { "question": 419, "code": "multiple", "label": "Múltiple", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 571, "fields": { "question": 419, "code": "otro-cual", "label": "Otro ¿Cuál?", "order": 6, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 572, "fields": { "question": 419, "code": "no-aplica", "label": "No aplica", "order": 7, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 420,
+    "fields": {
+      "section": 302,
+      "code": "labor-cuidado",
+      "text": "Su labor de cuidado es",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 4,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 573, "fields": { "question": 420, "code": "remunerado", "label": "Remunerado", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 574, "fields": { "question": 420, "code": "no-remunerado", "label": "No remunerado", "order": 2, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 421,
+    "fields": {
+      "section": 302,
+      "code": "tiempo-dedicado-cuidado",
+      "text": "¿Cuánto tiempo lleva dedicado al cuidado?",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 5,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 575, "fields": { "question": 421, "code": "0-6-meses", "label": "0 a 6 meses", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 576, "fields": { "question": 421, "code": "6-12-meses", "label": "6 a 12 meses", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 577, "fields": { "question": 421, "code": "1-2-anos", "label": "1 a 2 años", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 578, "fields": { "question": 421, "code": "2-5-anos", "label": "2 a 5 años", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 579, "fields": { "question": 421, "code": "5-10-anos", "label": "5 a 10 años", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 580, "fields": { "question": 421, "code": "mayor-10-anos", "label": "Mayor a 10 años", "order": 6, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 422,
+    "fields": {
+      "section": 302,
+      "code": "horas-dia-cuidador",
+      "text": "¿Cuántas horas al día desempeña como cuidador?",
+      "help_text": "",
+      "qtype": "int",
+      "required": true,
+      "order": 6,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 423,
+    "fields": {
+      "section": 302,
+      "code": "parentesco-persona-cuida",
+      "text": "¿Cuál es el parentesco con la persona a quien cuida?",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 7,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 581, "fields": { "question": 423, "code": "hija-o", "label": "Hija/o", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 582, "fields": { "question": 423, "code": "padre-madre", "label": "Padre o madre", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 583, "fields": { "question": 423, "code": "hermana-o", "label": "Hermana/o", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 584, "fields": { "question": 423, "code": "esposa-o", "label": "Esposa/o", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 585, "fields": { "question": 423, "code": "tia-o", "label": "Tía/o", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 586, "fields": { "question": 423, "code": "sobrina-o", "label": "Sobrina/o", "order": 6, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 587, "fields": { "question": 423, "code": "otro-cual", "label": "Otro ¿Cuál?", "order": 7, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 588, "fields": { "question": 423, "code": "no-aplica", "label": "No aplica", "order": 8, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 424,
+    "fields": {
+      "section": 302,
+      "code": "razon-principal-cuido",
+      "text": "¿Cuál es la razón principal por la cual usted realiza la labor de cuido?",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 8,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 589, "fields": { "question": 424, "code": "unica-persona-disponible", "label": "Era la única persona disponible", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 590, "fields": { "question": 424, "code": "decision-familiar", "label": "Por decisión familiar", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 591, "fields": { "question": 424, "code": "iniciativa-propia", "label": "Iniciativa propia", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 592, "fields": { "question": 424, "code": "solicito-persona-cuida", "label": "Porque lo solicitó la persona que cuida", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 593, "fields": { "question": 424, "code": "no-responde", "label": "No responde", "order": 5, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 594, "fields": { "question": 424, "code": "no-sabe", "label": "No sabe", "order": 6, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 425,
+    "fields": {
+      "section": 302,
+      "code": "tipo-cuidado-presta",
+      "text": "El tipo de cuidado que usted presta a la persona",
+      "help_text": "",
+      "qtype": "multi",
+      "required": true,
+      "order": 9,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 595, "fields": { "question": 425, "code": "tareas-domesticas", "label": "En tareas domésticas", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 596, "fields": { "question": 425, "code": "otras-actividades-calle", "label": "En otras actividades como salir a la calle hacer compras, ir al médico", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 597, "fields": { "question": 425, "code": "cuidados-personales", "label": "En cuidados personales: bañarlo, vestirlo, comer", "order": 3, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 598, "fields": { "question": 425, "code": "cuidados-especializados", "label": "Cuidados especializados de ayuda: manejo de sondas equipos médicos y terapias", "order": 4, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 599, "fields": { "question": 425, "code": "otros", "label": "Otros", "order": 5, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 426,
+    "fields": {
+      "section": 302,
+      "code": "formacion-capacitacion-cuidado",
+      "text": "¿Ha recibido formación y/o capacitación para el cuidado?",
+      "help_text": "",
+      "qtype": "bool",
+      "required": true,
+      "order": 10,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 427,
+    "fields": {
+      "section": 303,
+      "code": "salud-ultimos-30-dias",
+      "text": "En general, ¿Diría usted que su salud en los últimos 30 días ha sido?",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 1,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 600, "fields": { "question": 427, "code": "mejor", "label": "Mejor", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 601, "fields": { "question": 427, "code": "igual", "label": "Igual", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 602, "fields": { "question": 427, "code": "peor", "label": "Peor", "order": 3, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 428,
+    "fields": {
+      "section": 303,
+      "code": "salud-comparado-hace-un-ano",
+      "text": "Comparando su salud actual con la de hace un año. Usted diría que ahora su salud es:",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 2,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 603, "fields": { "question": 428, "code": "mejor", "label": "Mejor", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 604, "fields": { "question": 428, "code": "igual", "label": "Igual", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 605, "fields": { "question": 428, "code": "peor", "label": "Peor", "order": 3, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 429,
+    "fields": {
+      "section": 303,
+      "code": "salud-comparado-otras-personas",
+      "text": "En comparación con otras personas de su edad. Diría usted que su salud está:",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 3,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 606, "fields": { "question": 429, "code": "mejor", "label": "Mejor", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 607, "fields": { "question": 429, "code": "igual", "label": "Igual", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 608, "fields": { "question": 429, "code": "peor", "label": "Peor", "order": 3, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 430,
+    "fields": {
+      "section": 303,
+      "code": "orientacion-psicologica",
+      "text": "Alguna vez, ¿ha recibido orientación psicológica?",
+      "help_text": "",
+      "qtype": "bool",
+      "required": true,
+      "order": 4,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 431,
+    "fields": {
+      "section": 303,
+      "code": "revision-medico-general-ultimo-ano",
+      "text": "¿En el último año ha ido a revisión por medico general?",
+      "help_text": "",
+      "qtype": "bool",
+      "required": true,
+      "order": 5,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 432,
+    "fields": {
+      "section": 303,
+      "code": "citologia-ultimo-ano",
+      "text": "¿En el último año se ha realizado citología?",
+      "help_text": "",
+      "qtype": "bool",
+      "required": true,
+      "order": 6,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 433,
+    "fields": {
+      "section": 303,
+      "code": "mamografia-ultimos-dos-anos",
+      "text": "¿En los últimos dos años se ha realizado mamografía?",
+      "help_text": "",
+      "qtype": "single",
+      "required": true,
+      "order": 7,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 609, "fields": { "question": 433, "code": "si", "label": "Si", "order": 1, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 610, "fields": { "question": 433, "code": "no", "label": "No", "order": 2, "numeric_value": null } },
+  { "model": "surveys.option", "pk": 611, "fields": { "question": 433, "code": "no-aplica", "label": "No aplica", "order": 3, "numeric_value": null } },
+  {
+    "model": "surveys.question",
+    "pk": 434,
+    "fields": {
+      "section": 304,
+      "code": "pertenece-grupo-cuidadores",
+      "text": "¿Pertenece algún grupo organizado, organización o red cuidadores?",
+      "help_text": "",
+      "qtype": "bool",
+      "required": true,
+      "order": 1,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 435,
+    "fields": {
+      "section": 304,
+      "code": "nombre-grupo-cuidadores",
+      "text": "Si la respuesta anterior es afirmativa (si), ¿Cuál es el nombre del grupo organizado, organización o red cuidadores?",
+      "help_text": "",
+      "qtype": "text",
+      "required": false,
+      "order": 2,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 436,
+    "fields": {
+      "section": 304,
+      "code": "lidera-grupo-comunitario",
+      "text": "¿Pertenece o lidera algún grupo organizado o red cuidado comunitario?",
+      "help_text": "",
+      "qtype": "bool",
+      "required": true,
+      "order": 3,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 437,
+    "fields": {
+      "section": 304,
+      "code": "nombre-grupo-comunitario",
+      "text": "Si la respuesta anterior es afirmativa (si), ¿Cuál es el nombre del organizado o red de cuidado comunitario?",
+      "help_text": "",
+      "qtype": "text",
+      "required": false,
+      "order": 4,
+      "max_choices": 0
+    }
+  },
+  {
+    "model": "surveys.question",
+    "pk": 438,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q1",
+      "text": "¿Cree que su familiar solicita más ayuda de la que realmente necesita?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 1,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 612, "fields": { "question": 438, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 613, "fields": { "question": 438, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 614, "fields": { "question": 438, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 615, "fields": { "question": 438, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 616, "fields": { "question": 438, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 439,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q2",
+      "text": "¿Cree que debido al tiempo que dedica a su familiar ya no dispone de tiempo suficiente para usted?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 2,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 617, "fields": { "question": 439, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 618, "fields": { "question": 439, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 619, "fields": { "question": 439, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 620, "fields": { "question": 439, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 621, "fields": { "question": 439, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 440,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q3",
+      "text": "¿Se siente agobiado entre cuidar a su familiar y atender además otras responsabilidades en su trabajo o familia?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 3,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 622, "fields": { "question": 440, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 623, "fields": { "question": 440, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 624, "fields": { "question": 440, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 625, "fields": { "question": 440, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 626, "fields": { "question": 440, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 441,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q4",
+      "text": "¿Se siente avergonzado por la conducta de su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 4,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 627, "fields": { "question": 441, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 628, "fields": { "question": 441, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 629, "fields": { "question": 441, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 630, "fields": { "question": 441, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 631, "fields": { "question": 441, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 442,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q5",
+      "text": "¿Se siente enfadado cuando está cerca de su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 5,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 632, "fields": { "question": 442, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 633, "fields": { "question": 442, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 634, "fields": { "question": 442, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 635, "fields": { "question": 442, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 636, "fields": { "question": 442, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 443,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q6",
+      "text": "¿Piensa que su familiar afecta negativamente a su relación con otros miembros de su familia?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 6,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 637, "fields": { "question": 443, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 638, "fields": { "question": 443, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 639, "fields": { "question": 443, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 640, "fields": { "question": 443, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 641, "fields": { "question": 443, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 444,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q7",
+      "text": "¿Tiene miedo de lo que el futuro depare a su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 7,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 642, "fields": { "question": 444, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 643, "fields": { "question": 444, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 644, "fields": { "question": 444, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 645, "fields": { "question": 444, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 646, "fields": { "question": 444, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 445,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q8",
+      "text": "¿Cree que su familiar depende de usted?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 8,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 647, "fields": { "question": 445, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 648, "fields": { "question": 445, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 649, "fields": { "question": 445, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 650, "fields": { "question": 445, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 651, "fields": { "question": 445, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 446,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q9",
+      "text": "¿Se siente tenso cuando está cerca de su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 9,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 652, "fields": { "question": 446, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 653, "fields": { "question": 446, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 654, "fields": { "question": 446, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 655, "fields": { "question": 446, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 656, "fields": { "question": 446, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 447,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q10",
+      "text": "¿Cree que su salud se ha resentido por cuidar a su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 10,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 657, "fields": { "question": 447, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 658, "fields": { "question": 447, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 659, "fields": { "question": 447, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 660, "fields": { "question": 447, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 661, "fields": { "question": 447, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 448,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q11",
+      "text": "¿Cree que no tiene tanta intimidad como le gustaría debido a su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 11,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 662, "fields": { "question": 448, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 663, "fields": { "question": 448, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 664, "fields": { "question": 448, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 665, "fields": { "question": 448, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 666, "fields": { "question": 448, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 449,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q12",
+      "text": "¿Cree que su vida social se ha resentido por cuidar a su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 12,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 667, "fields": { "question": 449, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 668, "fields": { "question": 449, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 669, "fields": { "question": 449, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 670, "fields": { "question": 449, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 671, "fields": { "question": 449, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 450,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q13",
+      "text": "¿Se siente incómodo por desatender a sus amistades debido a su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 13,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 672, "fields": { "question": 450, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 673, "fields": { "question": 450, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 674, "fields": { "question": 450, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 675, "fields": { "question": 450, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 676, "fields": { "question": 450, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 451,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q14",
+      "text": "¿Cree que su familiar parece esperar que usted sea la persona que le cuide, como si usted fuera la única persona de quien depende?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 14,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 677, "fields": { "question": 451, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 678, "fields": { "question": 451, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 679, "fields": { "question": 451, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 680, "fields": { "question": 451, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 681, "fields": { "question": 451, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 452,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q15",
+      "text": "¿Cree que no tiene suficiente dinero para cuidar a su familiar además de sus otros gastos?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 15,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 682, "fields": { "question": 452, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 683, "fields": { "question": 452, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 684, "fields": { "question": 452, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 685, "fields": { "question": 452, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 686, "fields": { "question": 452, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 453,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q16",
+      "text": "¿Cree que será incapaz de cuidarle/a por mucho más tiempo?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 16,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 687, "fields": { "question": 453, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 688, "fields": { "question": 453, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 689, "fields": { "question": 453, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 690, "fields": { "question": 453, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 691, "fields": { "question": 453, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 454,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q17",
+      "text": "¿Siente que ha perdido el control de su vida desde la enfermedad de su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 17,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 692, "fields": { "question": 454, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 693, "fields": { "question": 454, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 694, "fields": { "question": 454, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 695, "fields": { "question": 454, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 696, "fields": { "question": 454, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 455,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q18",
+      "text": "¿Desearía poder dejar el cuidado de su familiar a otros?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 18,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 697, "fields": { "question": 455, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 698, "fields": { "question": 455, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 699, "fields": { "question": 455, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 700, "fields": { "question": 455, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 701, "fields": { "question": 455, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 456,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q19",
+      "text": "¿Se siente indeciso sobre qué hacer con su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 19,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 702, "fields": { "question": 456, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 703, "fields": { "question": 456, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 704, "fields": { "question": 456, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 705, "fields": { "question": 456, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 706, "fields": { "question": 456, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 457,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q20",
+      "text": "¿Cree que debería hacer más por su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 20,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 707, "fields": { "question": 457, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 708, "fields": { "question": 457, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 709, "fields": { "question": 457, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 710, "fields": { "question": 457, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 711, "fields": { "question": 457, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 458,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q21",
+      "text": "¿Cree que podría cuidar mejor de su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 21,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 712, "fields": { "question": 458, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 713, "fields": { "question": 458, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 714, "fields": { "question": 458, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 715, "fields": { "question": 458, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 716, "fields": { "question": 458, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } },
+  {
+    "model": "surveys.question",
+    "pk": 459,
+    "fields": {
+      "section": 305,
+      "code": "zarit-q22",
+      "text": "Globalmente, ¿qué grado de carga experimenta por el hecho de cuidar a su familiar?",
+      "help_text": "",
+      "qtype": "likert",
+      "required": true,
+      "order": 22,
+      "max_choices": 0
+    }
+  },
+  { "model": "surveys.option", "pk": 717, "fields": { "question": 459, "code": "nunca", "label": "Nunca", "order": 1, "numeric_value": 0 } },
+  { "model": "surveys.option", "pk": 718, "fields": { "question": 459, "code": "casi-nunca", "label": "Casi nunca", "order": 2, "numeric_value": 1 } },
+  { "model": "surveys.option", "pk": 719, "fields": { "question": 459, "code": "a-veces", "label": "A veces", "order": 3, "numeric_value": 2 } },
+  { "model": "surveys.option", "pk": 720, "fields": { "question": 459, "code": "bastantes-veces", "label": "Bastantes veces", "order": 4, "numeric_value": 3 } },
+  { "model": "surveys.option", "pk": 721, "fields": { "question": 459, "code": "casi-siempre", "label": "Casi siempre", "order": 5, "numeric_value": 4 } }
+]

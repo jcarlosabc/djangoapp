@@ -3,111 +3,67 @@
 {% block title %}Ingresar{% endblock %}
 
 {% block content %}
-<style>
-  .login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 80vh;
-    background-color: #f3f4f6;
-  }
-
-  .login-form {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease-in-out;
-    width: 100%;
-    max-width: 400px;
-  }
-
-  .login-form:hover {
-    transform: translateY(-5px);
-  }
-
-  .form-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    color: #333;
-  }
-
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
-  .form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #555;
-  }
-
-  .form-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 0.25rem;
-    transition: border-color 0.2s;
-  }
-
-  .form-input:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-
-  .submit-btn {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 0.25rem;
-    background-color: #3b82f6;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .submit-btn:hover {
-    background-color: #2563eb;
-  }
-</style>
-
-<div class="login-container">
-  <form method="post" class="login-form">
-    {% csrf_token %}
-    <h1 class="form-title">Ingresar</h1>
-    
-    <div class="form-group">
-      <label for="id_username" class="form-label">{{ form.username.label }}</label>
-      {{ form.username }}
-    </div>
-
-    <div class="form-group">
-      <label for="id_password" class="form-label">{{ form.password.label }}</label>
-      {{ form.password }}
-    </div>
-
-    {% if form.errors %}
-      <div class="alert alert-danger">
-        Tus datos son incorrectos. Por favor, inténtalo de nuevo.
+<div class="min-h-[calc(100vh-150px)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <div class="bg-white shadow-lg rounded-2xl p-8 md:p-12">
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-extrabold text-gray-900">
+          Bienvenido de Nuevo
+        </h1>
+        <p class="mt-2 text-sm text-gray-600">
+          Ingresa a tu cuenta para continuar
+        </p>
       </div>
-    {% endif %}
 
-    <button type="submit" class="submit-btn">Entrar</button>
-  </form>
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div>
+          <label for="id_username" class="sr-only">{{ form.username.label }}</label>
+          {{ form.username }}
+        </div>
+
+        <div>
+          <label for="id_password" class="sr-only">{{ form.password.label }}</label>
+          {{ form.password }}
+        </div>
+
+        {% if form.errors %}
+          <div class="p-3 rounded-md bg-red-50 border border-red-200">
+            <p class="text-sm text-red-700">
+              Tus datos son incorrectos. Por favor, inténtalo de nuevo.
+            </p>
+          </div>
+        {% endif %}
+
+        <div>
+          <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
+            Entrar
+          </button>
+        </div>
+      </form>
+
+       
+    </div>
+  </div>
 </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('.login-form');
-    form.style.transform = 'translateY(20px)';
-    setTimeout(() => {
-      form.style.transform = 'translateY(0)';
-    }, 100);
+    const usernameInput = document.getElementById('id_username');
+    const passwordInput = document.getElementById('id_password');
 
-    document.getElementById('id_username').classList.add('form-input');
-    document.getElementById('id_password').classList.add('form-input');
+    const baseClasses = 'appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm';
+
+    if (usernameInput) {
+      usernameInput.className = baseClasses + ' rounded-t-md';
+      usernameInput.placeholder = 'Usuario';
+    }
+
+    if (passwordInput) {
+      passwordInput.className = baseClasses + ' rounded-b-md';
+      passwordInput.placeholder = 'Contraseña';
+    }
   });
 </script>
 {% endblock %}
