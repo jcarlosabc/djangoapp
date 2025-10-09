@@ -30,27 +30,38 @@
 <div id="surveyContentWrapper" style="display: none;">
 
 <style>
-  .radio-options-inline > div {
-    display: flex;
-    flex-wrap: wrap;
+  .radio-options-inline > div, .checkbox-options-inline > div {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
   }
-  .radio-options-inline > div > div {
+  .radio-options-inline > div > div, .checkbox-options-inline > div > div {
     display: flex;
     align-items: center;
     background-color: #fff;
     border: 1px solid #e2e8f0;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   }
-  .radio-options-inline > div > div:hover {
+  .radio-options-inline > div > div:hover, .checkbox-options-inline > div > div:hover {
     border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
-  .radio-options-inline input[type="radio"] {
-    margin-right: 0.5rem;
+  .radio-options-inline input[type="radio"], .checkbox-options-inline input[type="checkbox"] {
+    margin-right: 0.75rem;
     accent-color: #3b82f6;
+    height: 1.25rem;
+    width: 1.25rem;
+  }
+  /* Style for selected option */
+  .radio-options-inline > div > div.selected, .checkbox-options-inline > div > div.selected {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+    color: #1e40af;
   }
 </style>
 
@@ -154,6 +165,11 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('surveyConsentGiven') === 'true') {
+        document.getElementById('dataProtectionSection').style.display = 'none';
+        document.getElementById('surveyContentWrapper').style.display = 'block';
+    }
+
     const acceptYesRadio = document.getElementById('acceptDataProtectionYes');
     const acceptNoRadio = document.getElementById('acceptDataProtectionNo');
     const continueButton = document.getElementById('continueToSurvey');
@@ -193,10 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     continueButton.addEventListener('click', function() {
         if (acceptYesRadio.checked) {
+            sessionStorage.setItem('surveyConsentGiven', 'true');
             dataProtectionSection.style.display = 'none';
             surveyContentWrapper.style.display = 'block';
             // Optionally, scroll to the top of the survey form
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            showStep(currentStep); // <--- ADDED THIS LINE
         }
     });
 
@@ -360,6 +378,32 @@ document.addEventListener('DOMContentLoaded', () => {
                         locInput.value = data.loc;
                         zonaInput.value = data.zona;
                     });
+            }
+        });
+    });
+
+    // Add this inside the DOMContentLoaded listener
+    document.querySelectorAll('.radio-options-inline, .checkbox-options-inline').forEach(container => {
+        const inputs = container.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                // For radio buttons, remove .selected from all in the group
+                if (input.type === 'radio') {
+                    const groupName = input.name;
+                    document.querySelectorAll(`input[name="${groupName}"]`).forEach(radio => {
+                        radio.parentElement.classList.remove('selected');
+                    });
+                }
+                // Add or remove .selected based on checked state
+                if (input.checked) {
+                    input.parentElement.classList.add('selected');
+                } else {
+                    input.parentElement.classList.remove('selected');
+                }
+            });
+            // Initial state
+            if (input.checked) {
+                input.parentElement.classList.add('selected');
             }
         });
     });

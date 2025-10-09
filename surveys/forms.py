@@ -3,16 +3,18 @@ from django.forms import ModelChoiceField, ModelMultipleChoiceField
 from .models import Question, Option, QuestionType, Municipio, Ubicacion, Interviewer # Added Interviewer
 
 class ResponseSetForm(forms.Form):
-    identificacion = forms.CharField(max_length=30, label="Identificación")
-    document_type = forms.ChoiceField(choices=[], label="Tipo de Documento")
-    full_name = forms.CharField(max_length=200, label="Nombre Completo", required=False)
-    email = forms.EmailField(label="Correo Electrónico", required=False)
-    phone = forms.CharField(max_length=30, label="Teléfono", required=False)
+    text_input_classes = 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
+    identificacion = forms.CharField(max_length=30, label="Identificación", widget=forms.TextInput(attrs={'class': text_input_classes}))
+    document_type = forms.ChoiceField(choices=[], label="Tipo de Documento", widget=forms.Select(attrs={'class': text_input_classes}))
+    full_name = forms.CharField(max_length=200, label="Nombre Completo", required=False, widget=forms.TextInput(attrs={'class': text_input_classes}))
+    email = forms.EmailField(label="Correo Electrónico", required=False, widget=forms.EmailInput(attrs={'class': text_input_classes}))
+    phone = forms.CharField(max_length=30, label="Teléfono", required=False, widget=forms.TextInput(attrs={'class': text_input_classes}))
     interviewer = forms.ModelChoiceField(
         queryset=Interviewer.objects.all(),
         label="Entrevistador",
         required=False,
-        empty_label="Selecciona un entrevistador"
+        empty_label="Selecciona un entrevistador",
+        widget=forms.Select(attrs={'class': text_input_classes})
     )
 
     def __init__(self, *args, **kwargs):
@@ -23,11 +25,16 @@ class ResponseSetForm(forms.Form):
 class AnswersForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        text_input_classes = 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
         for field_name, field in self.fields.items():
-            if isinstance(field.widget, (forms.TextInput, forms.Textarea, forms.DateInput, forms.Select)):
-                field.widget.attrs.update({"class": "form-control"})
+            if isinstance(field.widget, (forms.TextInput, forms.Textarea, forms.DateInput, forms.EmailInput, forms.NumberInput, forms.URLInput, forms.Select)):
+                attrs = field.widget.attrs
+                attrs['class'] = text_input_classes
+                if isinstance(field.widget, forms.Textarea):
+                    attrs['rows'] = 4
             elif isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):
-                field.widget.attrs.update({"class": "form-check-input"})
+                # Styling for these is handled in the template
+                pass
 
 def build_answers_form_for_section(section):
     fields = {}
@@ -110,11 +117,16 @@ def build_answers_form_for_section(section):
     class DynamicAnswersForm(forms.Form):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            text_input_classes = 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
             for field_name, field in self.fields.items():
-                if isinstance(field.widget, (forms.TextInput, forms.Textarea, forms.DateInput, forms.Select)):\
-                    field.widget.attrs.update({"class": "form-control"})
-                elif isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):\
-                    field.widget.attrs.update({"class": "form-check-input"})
+                if isinstance(field.widget, (forms.TextInput, forms.Textarea, forms.DateInput, forms.EmailInput, forms.NumberInput, forms.URLInput, forms.Select)):
+                    attrs = field.widget.attrs
+                    attrs['class'] = text_input_classes
+                    if isinstance(field.widget, forms.Textarea):
+                        attrs['rows'] = 4
+                elif isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):
+                    # Styling for these is handled in the template
+                    pass
 
             # Dynamic choices for ubicacion fields
             for q in section.questions.all():
