@@ -5,7 +5,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.urls import reverse
 from django.contrib import messages # <-- Añadido
-from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES, Ubicacion, Municipio
+from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES, Ubicacion, Municipio, Interviewer
 from .forms import ResponseSetForm, build_answers_form_for_section
 from .forms_signup import SignUpForm
 
@@ -60,104 +60,156 @@ def check_duplicate_respondent(request, survey_code):
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
+from django.db.models import Model
+
+# Helper to convert cleaned_data to a JSON-serializable dict
+def cleaned_data_to_json(cleaned_data):
+    json_data = {}
+    for key, value in cleaned_data.items():
+        if isinstance(value, Model):
+            json_data[key] = value.pk
+        elif isinstance(value, list):
+            json_data[key] = [v.pk if isinstance(v, Model) else v for v in value]
+        else:
+            json_data[key] = value
+    return json_data
+
 @login_required
 def survey_fill(request, survey_code):
-    print("DEBUG: survey_fill function called.")
     survey = get_object_or_404(Survey, code=survey_code, is_active=True)
     sections = survey.sections.all()
-    current_section_idx = int(request.GET.get('section', 0))
+    
+    # Initialize session data
+    if 'survey_answers' not in request.session:
+        request.session['survey_answers'] = {}
+    if 'respondent_data' not in request.session:
+        request.session['respondent_data'] = {}
 
+    current_section_idx = int(request.GET.get('section', 0))
+    
     if not sections.exists() or current_section_idx >= len(sections):
-        print("DEBUG: Redirecting to survey list (sections not exist or current_section_idx out of bounds).")
         return redirect('surveys:list')
 
     current_section = sections[current_section_idx]
-
-    sections_forms = []
-    for i, section_obj in enumerate(sections):
-        AnswersForm = build_answers_form_for_section(section_obj)
-        if i == current_section_idx and request.method == 'POST':
-            form_instance = AnswersForm(request.POST)
-        else:
-            form_instance = AnswersForm()
-        sections_forms.append((section_obj, form_instance))
+    AnswersForm = build_answers_form_for_section(current_section)
 
     if request.method == 'POST':
-        respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
-        answers_form_current_section = sections_forms[current_section_idx][1]
+        # Respondent form is only on the first section
+        if current_section_idx == 0:
+            respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
+            if respondent_form.is_valid():
+                request.session['respondent_data'] = cleaned_data_to_json(respondent_form.cleaned_data)
+                request.session.modified = True
+            else:
+                # Show errors and stay on the same page
+                answers_form = AnswersForm()
+                return render(request, 'surveys/survey_fill_steps.html', {
+                    'survey': survey,
+                    'section': current_section,
+                    'respondent_form': respondent_form,
+                    'answers_form': answers_form,
+                    'current_section_idx': current_section_idx,
+                    'total_sections': len(sections),
+                })
+        
+        answers_form = AnswersForm(request.POST)
+        if answers_form.is_valid():
+            # Store current section answers
+            request.session['survey_answers'][str(current_section.pk)] = cleaned_data_to_json(answers_form.cleaned_data)
+            request.session.modified = True
 
-        if respondent_form.is_valid() and answers_form_current_section.is_valid():
-            with transaction.atomic():
-                identificacion = respondent_form.cleaned_data['identificacion']
-                document_type = respondent_form.cleaned_data['document_type']
-                response_set, created = ResponseSet.objects.get_or_create(
-                    survey=survey,
-                    identificacion=identificacion,
-                    document_type=document_type,
-                    defaults={
-                        'full_name': respondent_form.cleaned_data['full_name'],
-                        'email': respondent_form.cleaned_data['email'],
-                        'phone': respondent_form.cleaned_data['phone'],
-                        'user': request.user,
-                        'interviewer': respondent_form.cleaned_data.get('interviewer'),
-                    }
-                )
-                if not created:
-                    response_set.full_name = respondent_form.cleaned_data['full_name']
-                    response_set.email = respondent_form.cleaned_data['email']
-                    response_set.phone = respondent_form.cleaned_data['phone']
-                    response_set.user = request.user
-                    response_set.interviewer = respondent_form.cleaned_data.get('interviewer')
-                    response_set.save()
+            # If last section, save everything
+            if current_section_idx == len(sections) - 1:
+                with transaction.atomic():
+                    respondent_data = request.session.get('respondent_data', {})
+                    interviewer_id = respondent_data.get('interviewer')
+                    interviewer_instance = Interviewer.objects.get(pk=interviewer_id) if interviewer_id else None
 
-                for question in current_section.questions.all():
-                    if question.qtype == 'ubicacion':
-                        field_name = f"question_{question.pk}_ubicacion"
-                    else:
-                        field_name = f"question_{question.pk}"
-                    answer_value = answers_form_current_section.cleaned_data.get(field_name)
-
-                    answer, _ = Answer.objects.update_or_create(
-                        response=response_set,
-                        question=question,
+                    response_set, _ = ResponseSet.objects.get_or_create(
+                        survey=survey,
+                        identificacion=respondent_data.get('identificacion'),
+                        document_type=respondent_data.get('document_type'),
                         defaults={
-                            'text_answer': answer_value if question.qtype == 'text' else '',
-                            'integer_answer': answer_value if question.qtype == 'int' else None,
-                            'decimal_answer': answer_value if question.qtype == 'dec' else None,
-                            'bool_answer': answer_value if question.qtype == 'bool' else None,
-                            'date_answer': answer_value if question.qtype == 'date' else None,
+                            'full_name': respondent_data.get('full_name'),
+                            'email': respondent_data.get('email'),
+                            'phone': respondent_data.get('phone'),
+                            'user': request.user,
+                            'interviewer': interviewer_instance,
                         }
                     )
-                    if question.qtype in ['single', 'multi', 'likert']:
-                        if answer_value:
-                            if not isinstance(answer_value, list):
-                                answer_value = [answer_value]
-                            answer.options.set(answer_value)
-                        else:
-                            answer.options.clear()
-                    elif question.qtype == 'ubicacion':
-                        if answer_value:
-                            answer.selected_ubicaciones.set([answer_value])
-                        else:
-                            answer.selected_ubicaciones.clear()
 
-            next_section_idx = current_section_idx + 1
-            if next_section_idx < len(sections):
-                url = reverse('surveys:fill', kwargs={'survey_code': survey_code})
-                return redirect(f"{url}?section={next_section_idx}")
-            else:
+                    for section_pk, section_answers in request.session.get('survey_answers', {}).items():
+                        section_obj = Section.objects.get(pk=section_pk)
+                        for question in section_obj.questions.all():
+                            field_name = f"question_{question.pk}"
+                            if question.qtype == 'ubicacion':
+                                field_name = f"question_{question.pk}_ubicacion"
+                            
+                            answer_value = section_answers.get(field_name)
+                            
+                            answer, _ = Answer.objects.update_or_create(
+                                response=response_set,
+                                question=question,
+                                defaults={
+                                    'text_answer': answer_value if question.qtype == 'text' else '',
+                                    'integer_answer': answer_value if question.qtype == 'int' else None,
+                                    'decimal_answer': answer_value if question.qtype == 'dec' else None,
+                                    'bool_answer': answer_value if question.qtype == 'bool' else None,
+                                    'date_answer': answer_value if question.qtype == 'date' else None,
+                                }
+                            )
+                            if question.qtype in ['single', 'multi', 'likert']:
+                                if answer_value:
+                                    if not isinstance(answer_value, list):
+                                        answer_value = [answer_value]
+                                    answer.options.set(answer_value)
+                                else:
+                                    answer.options.clear()
+                            elif question.qtype == 'ubicacion':
+                                if answer_value:
+                                    answer.selected_ubicaciones.set([answer_value])
+                                else:
+                                    answer.selected_ubicaciones.clear()
+                
+                # Clean up session
+                del request.session['survey_answers']
+                del request.session['respondent_data']
+                
                 messages.success(request, '¡Encuesta guardada exitosamente!')
                 return render(request, 'surveys/survey_complete.html', {'survey': survey})
+
+            # Not the last section, redirect to the next one
+            else:
+                next_section_idx = current_section_idx + 1
+                url = reverse('surveys:fill', kwargs={'survey_code': survey_code})
+                return redirect(f"{url}?section={next_section_idx}")
         else:
-            respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
+            # Show errors and stay on the same page
+            respondent_form = ResponseSetForm(request.session.get('respondent_data', {}), document_types=DOCUMENT_TYPES)
+            return render(request, 'surveys/survey_fill_steps.html', {
+                'survey': survey,
+                'section': current_section,
+                'respondent_form': respondent_form,
+                'answers_form': answers_form,
+                'current_section_idx': current_section_idx,
+                'total_sections': len(sections),
+            })
+
     else: # GET request
-        respondent_form = ResponseSetForm(document_types=DOCUMENT_TYPES)
+        # If it's the first section, show the respondent form
+        if current_section_idx == 0:
+            respondent_form = ResponseSetForm(initial=request.session.get('respondent_data', {}), document_types=DOCUMENT_TYPES)
+        else:
+            respondent_form = None
+        
+        # Populate answers form with session data if available
+        answers_form = AnswersForm(initial=request.session.get('survey_answers', {}).get(str(current_section.pk), {}))
 
     context = {
         'survey': survey,
         'section': current_section,
         'respondent_form': respondent_form,
-        'sections_forms': sections_forms,
+        'answers_form': answers_form,
         'current_section_idx': current_section_idx,
         'total_sections': len(sections),
     }

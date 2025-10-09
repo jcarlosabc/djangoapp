@@ -97,11 +97,10 @@
   </div>
 
   <!-- Pasos siguientes: Secciones -->
-  {% for section, form in sections_forms %}
-  <div class="step bg-white p-6 rounded-xl shadow-md hidden">
-    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Sección {{ forloop.counter }}: {{ section.title }}</h2>
+  <div class="step bg-white p-6 rounded-xl shadow-md">
+    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Sección {{ current_section_idx|add:1 }}: {{ section.title }}</h2>
     
-    {% with questions=form.visible_fields %}
+    {% with questions=answers_form.visible_fields %}
     {% if questions|length > 6 %}
       <div class="paged-section" data-questions-per-page="6">
         <div class="grid sm:grid-cols-2 gap-6">
@@ -140,12 +139,15 @@
     {% endif %}
     {% endwith %}
   </div>
-  {% endfor %}
 
   <div class="flex justify-between mt-8">
-    <button type="button" id="prevBtn" class="px-6 py-2 rounded-lg bg-gray-300 text-gray-800 font-semibold hover:bg-gray-400 transition-colors hidden">Anterior</button>
-    <button type="button" id="nextBtn" class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors">Siguiente</button>
-    <button type="submit" id="submitBtn" class="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors hidden">Enviar</button>
+    {% if current_section_idx > 0 %}
+        <a href="?section={{ current_section_idx|add:-1 }}" class="px-6 py-2 rounded-lg bg-gray-300 text-gray-800 font-semibold hover:bg-gray-400 transition-colors">Anterior</a>
+    {% endif %}
+    <button type="submit" id="nextBtn" class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors">Siguiente</button>
+    {% if current_section_idx == total_sections|add:-1 %}
+        <button type="submit" id="submitBtn" class="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors">Enviar</button>
+    {% endif %}
   </div>
 </form>
 </div>
@@ -195,23 +197,11 @@ document.addEventListener('DOMContentLoaded', () => {
             surveyContentWrapper.style.display = 'block';
             // Optionally, scroll to the top of the survey form
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            showStep(currentStep); // <--- ADDED THIS LINE
         }
     });
 
     // Initial state
     updateContinueButtonState();
-
-    let currentStep = 0;
-    const steps = document.querySelectorAll(".step");
-    const pills = document.querySelectorAll(".step-pill");
-    const prevBtn = document.getElementById("prevBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const submitBtn = document.getElementById("submitBtn");
-    const progressBar = document.getElementById("progressBar");
-    const stepText = document.getElementById("stepText");
-    const percentText = document.getElementById("percentText");
-    const totalSteps = steps.length;
 
     const form = document.querySelector("form");
     const checkUrl = form.dataset.checkUrl;
@@ -279,95 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         return valid;
     }
-
-    function updateProgressUI() {
-        const pct = Math.round(((currentStep + 1) / totalSteps) * 100);
-        progressBar.style.width = pct + "%";
-        percentText.textContent = pct + "%";
-        stepText.textContent = `Paso ${currentStep + 1} de ${totalSteps}`;
-        pills.forEach((pill, i) => {
-            pill.classList.toggle("bg-blue-100", i <= currentStep);
-            pill.classList.toggle("text-blue-700", i <= currentStep);
-            pill.classList.toggle("font-medium", i <= currentStep);
-            pill.classList.toggle("bg-gray-100", i > currentStep);
-            pill.classList.toggle("text-gray-600", i > currentStep);
-        });
-    }
-
-    function showStep(n) {
-        steps.forEach((s, i) => s.classList.toggle("hidden", i !== n));
-        prevBtn.classList.toggle("hidden", n === 0);
-        nextBtn.classList.toggle("hidden", n === totalSteps - 1);
-        submitBtn.classList.toggle("hidden", n !== totalSteps - 1);
-        updateProgressUI();
-    }
-
-    prevBtn.addEventListener("click", () => {
-        if (currentStep > 0) {
-            currentStep--;
-            showStep(currentStep);
-        }
-    });
-
-    nextBtn.addEventListener("click", async () => {
-        const currentStepEl = steps[currentStep];
-        const pagedSection = currentStepEl.querySelector('.paged-section');
-
-        if (pagedSection) {
-            const pagedManager = pagedSection.pagedManager;
-            if (!pagedManager.isOnLastPage()) {
-                pagedManager.nextPage();
-                return;
-            }
-        }
-
-        const fieldsToValidate = Array.from(currentStepEl.querySelectorAll('.field-wrapper:not(.hidden) .field, .field:not(.field-wrapper .field)'));
-        const isValidClientSide = validateFields(fieldsToValidate);
-        if (!isValidClientSide) {
-            return;
-        }
-
-        if (currentStep === 0 && checkUrl) {
-            const identInput = form.querySelector('input[name="identificacion"]');
-            const docSelect = form.querySelector('select[name="document_type"]');
-            if (identInput && docSelect) {
-                const payload = new URLSearchParams();
-                payload.append('identificacion', (identInput.value || "").trim());
-                payload.append('document_type', docSelect.value || "");
-
-                try {
-                    const response = await fetch(checkUrl, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded",
-                            "X-CSRFToken": csrfTokenInput ? csrfTokenInput.value : "",
-                            "X-Requested-With": "XMLHttpRequest",
-                        },
-                        body: payload.toString(),
-                    });
-
-                    const data = await response.json();
-                    if (!data.valid) {
-                        const message = data.message || "Esta persona ya respondio esta encuesta.";
-                        const identField = identInput.closest('.field');
-                        if (identField) setFieldError(identField, message);
-                        identInput.focus();
-                        return;
-                    }
-                } catch (error) {
-                    console.error('Error validating duplicate respondent', error);
-                    const identField = identInput.closest('.field');
-                    if (identField) setFieldError(identField, "No fue posible validar la informacion. Intenta de nuevo.");
-                    return;
-                }
-            }
-        }
-
-        if (currentStep < totalSteps - 1) {
-            currentStep++;
-            showStep(currentStep);
-        } 
-    });
 
     form.addEventListener("submit", (e) => {
         const fieldsToValidate = Array.from(form.querySelectorAll('.field'));
