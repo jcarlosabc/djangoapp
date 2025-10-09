@@ -19,8 +19,14 @@ class ResponseSetForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         document_types = kwargs.pop("document_types", [])
+        user = kwargs.pop("user", None) # Get user from kwargs
         super().__init__(*args, **kwargs)
         self.fields["document_type"].choices = document_types
+
+        # If user is not authenticated, remove the interviewer field
+        if user and not user.is_authenticated:
+            if 'interviewer' in self.fields:
+                del self.fields['interviewer']
 
 class AnswersForm(forms.Form):
     def __init__(self, *args, **kwargs):

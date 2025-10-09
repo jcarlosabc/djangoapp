@@ -74,7 +74,6 @@ def cleaned_data_to_json(cleaned_data):
             json_data[key] = value
     return json_data
 
-@login_required
 def survey_fill(request, survey_code):
     survey = get_object_or_404(Survey, code=survey_code, is_active=True)
     sections = survey.sections.all()
@@ -99,7 +98,7 @@ def survey_fill(request, survey_code):
     if request.method == 'POST':
         if request.POST.get('step_name') == 'respondent':
             if request.POST.get('data_protection_consent_value') != 'yes':
-                respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
+                respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES, user=request.user)
                 context = {
                     'survey': survey,
                     'respondent_form': respondent_form,
@@ -108,7 +107,7 @@ def survey_fill(request, survey_code):
                 }
                 return render(request, 'surveys/survey_fill_steps.html', context)
 
-            respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES)
+            respondent_form = ResponseSetForm(request.POST, document_types=DOCUMENT_TYPES, user=request.user)
             if respondent_form.is_valid():
                 request.session['respondent_data'] = cleaned_data_to_json(respondent_form.cleaned_data)
                 request.session.modified = True
@@ -146,7 +145,7 @@ def survey_fill(request, survey_code):
                                 'full_name': respondent_data.get('full_name'),
                                 'email': respondent_data.get('email'),
                                 'phone': respondent_data.get('phone'),
-                                'user': request.user,
+                                'user': request.user if request.user.is_authenticated else None,
                                 'interviewer': interviewer_instance,
                             }
                         )
@@ -205,7 +204,7 @@ def survey_fill(request, survey_code):
 
     # GET request logic
     if is_respondent_step:
-        respondent_form = ResponseSetForm(initial=request.session.get('respondent_data', {}), document_types=DOCUMENT_TYPES)
+        respondent_form = ResponseSetForm(initial=request.session.get('respondent_data', {}), document_types=DOCUMENT_TYPES, user=request.user)
         context = {
             'survey': survey,
             'respondent_form': respondent_form,
