@@ -37,7 +37,7 @@ class AnswersForm(forms.Form):
                 attrs = field.widget.attrs
                 attrs['class'] = text_input_classes
                 if isinstance(field.widget, forms.Textarea):
-                    attrs['rows'] = 4
+                    attrs['rows'] = 2
             elif isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):
                 # Styling for these is handled in the template
                 pass
@@ -129,7 +129,7 @@ def build_answers_form_for_section(section):
                     attrs = field.widget.attrs
                     attrs['class'] = text_input_classes
                     if isinstance(field.widget, forms.Textarea):
-                        attrs['rows'] = 4
+                        attrs['rows'] = 2
                 elif isinstance(field.widget, (forms.RadioSelect, forms.CheckboxSelectMultiple)):
                     # Styling for these is handled in the template
                     pass
