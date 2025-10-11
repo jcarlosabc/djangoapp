@@ -1,0 +1,114 @@
+{% extends "surveys/base.html" %}
+
+{% block title %}Panel de Control de Encuestas{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-bold">Panel de Control</h1>
+  <p class="text-lg text-gray-600">Estadísticas generales de ejecución</p>
+</div>
+
+<!-- Stat Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-gray-500 text-sm font-medium">Total de Encuestas</h3>
+    <p class="text-3xl font-bold text-blue-600">{{ total_surveys }}</p>
+  </div>
+  <div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-gray-500 text-sm font-medium">Total de Respuestas</h3>
+    <p class="text-3xl font-bold text-green-600">{{ total_responses }}</p>
+  </div>
+  <div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-gray-500 text-sm font-medium">Total de Encuestadores</h3>
+    <p class="text-3xl font-bold text-purple-600">{{ total_interviewers }}</p>
+  </div>
+</div>
+
+<!-- Survey Stats Table -->
+<div class="bg-white p-6 rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4">Rendimiento por Encuesta</h2>
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Encuesta</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Respuestas</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Encuestadores</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última Respuesta</th>
+          <th scope="col" class="relative px-6 py-3">
+            <span class="sr-only">Ver Detalles</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for survey in surveys_stats %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">{{ survey.name }}</div>
+              <div class="text-sm text-gray-500">{{ survey.code }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">{{ survey.response_count }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">{{ survey.interviewer_count }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {% if survey.last_response_date %}
+                {{ survey.last_response_date|date:"d/m/Y, P" }}
+              {% else %}
+                Sin actividad
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a href="{% url 'surveys:stats' survey.code %}" class="text-blue-600 hover:text-blue-900">Ver detalles</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No hay encuestas para mostrar.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Interviewer Stats Table -->
+<div class="mt-8 bg-white p-6 rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4">Rendimiento por Encuestador</h2>
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Encuestador</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº de Respuestas</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última Actividad</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for interviewer in interviewers_stats %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">{{ interviewer.full_name }}</div>
+              <div class="text-sm text-gray-500">{{ interviewer.document_type }} {{ interviewer.document_number }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">{{ interviewer.response_count }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {% if interviewer.last_response_date %}
+                {{ interviewer.last_response_date|date:"d/m/Y, P" }}
+              {% else %}
+                Sin actividad
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">No hay encuestadores para mostrar.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mt-8">
+    <a href="{% url 'surveys:list' %}" class="text-blue-600 hover:underline">&larr; Volver a la lista de encuestas</a>
+</div>
+{% endblock %}

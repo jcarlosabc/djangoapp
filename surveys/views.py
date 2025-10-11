@@ -438,6 +438,35 @@ def get_ubicacion_details(request):
 from django.db.models import Count, Avg, Min, Max
 
 @login_required
+def dashboard_view(request):
+    total_surveys = Survey.objects.count()
+    total_responses = ResponseSet.objects.count()
+    total_interviewers = Interviewer.objects.count()
+
+    # Anotar cada encuesta con sus estadísticas relevantes
+    surveys_stats = Survey.objects.annotate(
+        response_count=Count('responses'),
+        interviewer_count=Count('responses__interviewer', distinct=True),
+        last_response_date=Max('responses__created_at')
+    ).order_by('-last_response_date')
+
+    # Anotar cada encuestador con el número de respuestas y la fecha de la última respuesta
+    interviewers_stats = Interviewer.objects.annotate(
+        response_count=Count('responseset'),
+        last_response_date=Max('responseset__created_at')
+    ).order_by('-response_count', 'full_name')
+
+    context = {
+        'total_surveys': total_surveys,
+        'total_responses': total_responses,
+        'total_interviewers': total_interviewers,
+        'surveys_stats': surveys_stats,
+        'interviewers_stats': interviewers_stats,
+    }
+    return render(request, 'surveys/dashboard.html', context)
+
+
+@login_required
 def survey_stats_view(request, survey_code):
     survey = get_object_or_404(Survey, code=survey_code)
     response_count = ResponseSet.objects.filter(survey=survey).count()

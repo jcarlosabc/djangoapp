@@ -10,6 +10,7 @@ urlpatterns = [
     path("s/<slug:survey_code>/", views.survey_fill, name="fill"), # Changed 'code' to 'survey_code'
     path("s/<slug:survey_code>/check-respondent/", views.check_duplicate_respondent, name="check_respondent"), # Changed 'code' to 'survey_code'
     path("stats/<slug:survey_code>/", views.survey_stats_view, name="stats"),
+    path("dashboard/", views.dashboard_view, name="dashboard"),
     path("upload/", views.survey_upload_view, name="survey_upload"),
     path("signup/", views.signup, name="signup"),
     path("login/", auth_views.LoginView.as_view(template_name="surveys/auth_login.html"), name="login"),
