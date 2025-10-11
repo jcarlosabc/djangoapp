@@ -50,17 +50,32 @@ class QuestionAdminForm(forms.ModelForm):
         cleaned_data = super().clean()
         depends_on_question = cleaned_data.get("depends_on")
         depends_on_option = cleaned_data.get("depends_on_option")
+        min_val = cleaned_data.get("depends_on_value_min")
+        max_val = cleaned_data.get("depends_on_value_max")
 
-        if depends_on_question and depends_on_option:
-            # Check if the selected option belongs to the selected question
-            if not depends_on_question.options.filter(pk=depends_on_option.pk).exists():
-                self.add_error('depends_on_option', forms.ValidationError("La opción seleccionada no pertenece a la pregunta de la que depende."))
-        
-        # If only one is set, that's an error
-        elif depends_on_question and not depends_on_option:
-            self.add_error('depends_on_option', forms.ValidationError("Debe seleccionar una opción para la pregunta de la que depende."))
-        elif not depends_on_question and depends_on_option:
-            self.add_error('depends_on_question', forms.ValidationError("Debe seleccionar una pregunta si selecciona una opción de dependencia."))
+        if not depends_on_question:
+            return cleaned_data
+
+        # Enforce that option and value dependencies are mutually exclusive
+        if depends_on_option and (min_val is not None or max_val is not None):
+            raise forms.ValidationError(
+                "Una pregunta no puede depender de una opción y de un rango de valores al mismo tiempo.",
+                code='invalid_dependency_mix'
+            )
+
+        # Validate option-based dependency
+        if depends_on_option:
+            if depends_on_question.qtype not in [QuestionType.SINGLE, QuestionType.MULTI]:
+                self.add_error('depends_on_question', "La dependencia de opción solo puede apuntar a preguntas de opción única o múltiple.")
+            elif not depends_on_question.options.filter(pk=depends_on_option.pk).exists():
+                self.add_error('depends_on_option', "La opción seleccionada no pertenece a la pregunta de la que depende.")
+
+        # Validate value-based dependency
+        if min_val is not None or max_val is not None:
+            if depends_on_question.qtype not in [QuestionType.INTEGER, QuestionType.DECIMAL]:
+                self.add_error('depends_on_question', "La dependencia de valor solo puede apuntar a preguntas de tipo numérico (entero o decimal).")
+            if min_val is not None and max_val is not None and min_val > max_val:
+                self.add_error('depends_on_value_max', "El valor máximo no puede ser menor que el valor mínimo.")
 
         return cleaned_data
 

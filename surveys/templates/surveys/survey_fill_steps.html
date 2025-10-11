@@ -122,7 +122,9 @@
              data-question-id="{{ field.field.question.pk }}"
              {% if field.field.question.depends_on %}
              data-depends-on-question="{{ field.field.question.depends_on.pk }}"
-             data-depends-on-option="{{ field.field.question.depends_on_option.pk }}"
+             data-depends-on-option="{{ field.field.question.depends_on_option.pk|default_if_none:'' }}"
+             data-depends-on-value-min="{{ field.field.question.depends_on_value_min|default_if_none:'' }}"
+             data-depends-on-value-max="{{ field.field.question.depends_on_value_max|default_if_none:'' }}"
              style="display: none;"
              {% endif %}>
             <div class="field" data-required="{{ field.field.required|yesno:'1,0' }}">
@@ -396,7 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const formContainer = document.querySelector('form');
 
     function updateDependentQuestions() {
-        console.log("--- Checking Dependencies ---");
         const allQuestions = document.querySelectorAll('.question-wrapper');
         const formData = new FormData(formContainer);
         
@@ -411,28 +412,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 questionStates[qId].push(value);
             }
         }
-        console.log("Current form state:", questionStates);
 
         allQuestions.forEach(questionWrapper => {
-            const questionId = questionWrapper.dataset.questionId;
             const dependsOnQuestion = questionWrapper.dataset.dependsOnQuestion;
+            if (!dependsOnQuestion) return; // Skip if not a dependent question
+
             const dependsOnOption = questionWrapper.dataset.dependsOnOption;
+            const dependsOnMin = questionWrapper.dataset.dependsOnValueMin;
+            const dependsOnMax = questionWrapper.dataset.dependsOnValueMax;
+            const parentState = questionStates[dependsOnQuestion];
 
-            if (dependsOnQuestion && dependsOnOption) {
-                console.log(`Question ${questionId} depends on Q${dependsOnQuestion} option ${dependsOnOption}`);
-                const parentState = questionStates[dependsOnQuestion];
-                console.log(`Parent ${dependsOnQuestion} state is:`, parentState);
+            let isMet = false;
 
+            // Check for option-based dependency
+            if (dependsOnOption) {
                 if (parentState && parentState.includes(dependsOnOption)) {
-                    console.log(`-> Met. Showing Q${questionId}`);
-                    questionWrapper.style.display = '';
-                } else {
-                    console.log(`-> Not met. Hiding Q${questionId}`);
-                    questionWrapper.style.display = 'none';
+                    isMet = true;
                 }
             }
+            // Check for value-based dependency
+            else if (dependsOnMin || dependsOnMax) {
+                if (parentState && parentState.length > 0) {
+                    const parentValue = parseFloat(parentState[0]);
+                    if (!isNaN(parentValue)) {
+                        const min = dependsOnMin ? parseFloat(dependsOnMin) : null;
+                        const max = dependsOnMax ? parseFloat(dependsOnMax) : null;
+                        
+                        let minCondition = true;
+                        let maxCondition = true;
+
+                        if (min !== null) {
+                            minCondition = parentValue >= min;
+                        }
+                        if (max !== null) {
+                            maxCondition = parentValue <= max;
+                        }
+                        if (minCondition && maxCondition) {
+                            isMet = true;
+                        }
+                    }
+                }
+            }
+
+            if (isMet) {
+                questionWrapper.style.display = '';
+            } else {
+                questionWrapper.style.display = 'none';
+            }
         });
-        console.log("--- Finished Dependencies ---");
     }
 
     // Initial check on page load

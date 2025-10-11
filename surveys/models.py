@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q, CheckConstraint
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -107,9 +108,18 @@ class Question(models.Model):
         help_text="La opción que activa esta pregunta"
     )
 
+    depends_on_value_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Valor mínimo para activar la pregunta (para respuestas numéricas)")
+    depends_on_value_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Valor máximo para activar la pregunta (para respuestas numéricas)")
+
     class Meta:
         unique_together = ("section", "code")
         ordering = ["section__order", "order"]
+        constraints = [
+            CheckConstraint(
+                check=Q(depends_on_option__isnull=True) | (Q(depends_on_value_min__isnull=True) & Q(depends_on_value_max__isnull=True)),
+                name='option_or_value_dependency'
+            )
+        ]
     def __str__(self): return f"{self.section} · {self.code}"
 
 class Option(models.Model):

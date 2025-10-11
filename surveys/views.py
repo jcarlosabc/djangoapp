@@ -245,16 +245,19 @@ def get_ubicacion_details(request):
     ubicacion = get_object_or_404(Ubicacion, pk=ubicacion_id)
     return JsonResponse({'loc': ubicacion.loc, 'zona': ubicacion.zona})
 
-def get_question_options(request):
+def get_question_dependency_data(request):
     question_id = request.GET.get('question_id')
     if not question_id:
-        return JsonResponse([], safe=False)
+        return JsonResponse({'error': 'No question_id provided'}, status=400)
     try:
         question = Question.objects.get(pk=question_id)
-        # Asegurarse de que la pregunta es de tipo single o multi
-        if question.qtype not in [QuestionType.SINGLE, QuestionType.MULTI]:
-            return JsonResponse([], safe=False)
-        options = list(question.options.values('id', 'label'))
-        return JsonResponse(options, safe=False)
+        data = {
+            'qtype': question.qtype,
+            'options': []
+        }
+        if question.qtype in [QuestionType.SINGLE, QuestionType.MULTI]:
+            data['options'] = list(question.options.values('id', 'label'))
+        
+        return JsonResponse(data)
     except Question.DoesNotExist:
-        return JsonResponse([], safe=False)
+        return JsonResponse({'error': 'Question not found'}, status=404)

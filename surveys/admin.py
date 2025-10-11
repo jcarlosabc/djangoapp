@@ -42,7 +42,7 @@ class QuestionAdmin(admin.ModelAdmin):
             'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'single_choice_display', 'required', 'order', 'max_choices', 'ubicaciones') # Added 'ubicaciones'
         }),
         ('Dependencia', {
-            'fields': ('depends_on', 'depends_on_option'),
+            'fields': ('depends_on', 'depends_on_option', 'depends_on_value_min', 'depends_on_value_max'),
         }),
     )
 

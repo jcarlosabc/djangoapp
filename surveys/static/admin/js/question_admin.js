@@ -1,48 +1,64 @@
+
 (function($) {
     $(document).ready(function() {
         const dependsOnSelect = $('#id_depends_on');
-        const dependsOnOptionSelect = $('#id_depends_on_option');
-        const originalDependsOnOptionValue = dependsOnOptionSelect.val();
+        const optionFieldRow = $('.field-depends_on_option');
+        const minFieldRow = $('.field-depends_on_value_min');
+        const maxFieldRow = $('.field-depends_on_value_max');
+        const optionSelect = $('#id_depends_on_option');
 
-        function updateDependsOnOptions(selectedValue) {
-            const questionId = selectedValue;
-            const currentOptionValue = dependsOnOptionSelect.val();
+        const originalOptionValue = optionSelect.val();
 
+        function updateDependencyFields(questionId) {
             if (!questionId) {
-                dependsOnOptionSelect.html('<option value="">---------</option>');
+                optionFieldRow.hide();
+                minFieldRow.hide();
+                maxFieldRow.hide();
                 return;
             }
 
             $.ajax({
-                url: '/ajax/get_question_options/',
-                data: {
-                    'question_id': questionId
-                },
+                url: '/ajax/get_question_dependency_data/',
+                data: { 'question_id': questionId },
                 success: function(data) {
-                    let options = '<option value="">---------</option>';
-                    data.forEach(function(option) {
-                        options += '<option value="' + option.id + '">' + option.label + '</option>';
-                    });
-                    dependsOnOptionSelect.html(options);
+                    // Hide all by default
+                    optionFieldRow.hide();
+                    minFieldRow.hide();
+                    maxFieldRow.hide();
+                    optionSelect.html('<option value="">---------</option>');
 
-                    // Restore selection if possible
-                    if (data.some(option => option.id.toString() === originalDependsOnOptionValue)) {
-                        dependsOnOptionSelect.val(originalDependsOnOptionValue);
-                    } else if (data.some(option => option.id.toString() === currentOptionValue)) {
-                        dependsOnOptionSelect.val(currentOptionValue);
+                    if (data.qtype === 'single' || data.qtype === 'multi') {
+                        let options = '<option value="">---------</option>';
+                        data.options.forEach(function(option) {
+                            options += '<option value="' + option.id + '">' + option.label + '</option>';
+                        });
+                        optionSelect.html(options);
+                        
+                        // Restore selection if possible
+                        if (data.options.some(opt => opt.id.toString() === originalOptionValue)) {
+                            optionSelect.val(originalOptionValue);
+                        }
+                        optionFieldRow.show();
+
+                    } else if (data.qtype === 'int' || data.qtype === 'dec') {
+                        minFieldRow.show();
+                        maxFieldRow.show();
                     }
+                },
+                error: function() {
+                    optionFieldRow.hide();
+                    minFieldRow.hide();
+                    maxFieldRow.hide();
                 }
             });
         }
 
         // Initial load
-        if (dependsOnSelect.val()) {
-            updateDependsOnOptions(dependsOnSelect.val());
-        }
+        updateDependencyFields(dependsOnSelect.val());
 
         // Update on change
         dependsOnSelect.on('change', function() {
-            updateDependsOnOptions($(this).val());
+            updateDependencyFields($(this).val());
         });
     });
 })(django.jQuery);
