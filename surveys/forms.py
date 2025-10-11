@@ -110,6 +110,15 @@ def build_answers_form_for_section(section):
                 widget=forms.Textarea if q.max_choices == 0 else forms.TextInput,
             )
         elif q.qtype == QuestionType.INTEGER:
+            widget_attrs = {}
+            if q.min_value is not None:
+                field_kwargs['min_value'] = q.min_value
+                widget_attrs['min'] = q.min_value
+            if q.max_value is not None:
+                field_kwargs['max_value'] = q.max_value
+                widget_attrs['max'] = q.max_value
+            
+            field_kwargs['widget'] = forms.NumberInput(attrs=widget_attrs)
             field = forms.IntegerField(**field_kwargs)
         elif q.qtype == QuestionType.DECIMAL:
             field = forms.DecimalField(**field_kwargs)

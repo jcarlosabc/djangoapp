@@ -114,6 +114,9 @@ class Question(models.Model):
     copy_from = models.CharField(max_length=100, blank=True, help_text="Nombre del campo del cual copiar la respuesta (ej. 'identificacion' o 'question_123').")
     copy_text_from = models.BooleanField(default=False, help_text="Si se marca, el texto de la pregunta se copiará del campo seleccionado.")
 
+    min_value = models.IntegerField(null=True, blank=True, help_text="Valor mínimo para preguntas de tipo entero.")
+    max_value = models.IntegerField(null=True, blank=True, help_text="Valor máximo para preguntas de tipo entero.")
+
     class Meta:
         unique_together = ("section", "code")
         ordering = ["section__order", "order"]

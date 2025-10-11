@@ -35,12 +35,12 @@ class SectionAdmin(admin.ModelAdmin):
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     form = QuestionAdminForm
-    list_display = ("section", "code", "qtype", "single_choice_display", "required", "order", "max_choices", "copy_from")
+    list_display = ("section", "code", "qtype", "single_choice_display", "required", "order", "max_choices", "copy_from", "min_value", "max_value")
     list_filter = ("qtype", "required", "section__survey")
     inlines = [OptionInline]
     fieldsets = (
         (None, {
-            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'single_choice_display', 'required', 'order', 'max_choices', 'ubicaciones')
+            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'single_choice_display', 'required', 'order', 'max_choices', 'ubicaciones', 'min_value', 'max_value')
         }),
         ('Dependencia', {
             'fields': ('depends_on', 'depends_on_option', 'depends_on_value_min', 'depends_on_value_max'),

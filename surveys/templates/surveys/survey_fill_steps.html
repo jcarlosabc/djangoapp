@@ -470,6 +470,33 @@ document.addEventListener('DOMContentLoaded', () => {
         formContainer.addEventListener('change', updateDependentQuestions);
     }
 
+    // --- Client-side validation for min/max on number inputs ---
+    document.querySelectorAll('input[type="number"][min], input[type="number"][max]').forEach(input => {
+        input.addEventListener('input', () => {
+            const value = parseFloat(input.value);
+            const min = input.hasAttribute('min') ? parseFloat(input.getAttribute('min')) : null;
+            const max = input.hasAttribute('max') ? parseFloat(input.getAttribute('max')) : null;
+            const fieldWrapper = input.closest('.field');
+
+            if (isNaN(value)) {
+                clearFieldError(fieldWrapper);
+                return;
+            }
+
+            let errorMessage = '';
+            if (min !== null && value < min) {
+                errorMessage = `El valor debe ser mayor o igual a ${min}.`;
+            } else if (max !== null && value > max) {
+                errorMessage = `El valor debe ser menor o igual a ${max}.`;
+            }
+
+            if (errorMessage) {
+                setFieldError(fieldWrapper, errorMessage);
+            } else {
+                clearFieldError(fieldWrapper);
+            }
+        });
+    });
 
 });
 </script>
