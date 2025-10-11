@@ -28,6 +28,42 @@ class ResponseSetForm(forms.Form):
             if 'interviewer' in self.fields:
                 del self.fields['interviewer']
 
+class QuestionAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Check if the form is bound to data (i.e., a POST request)
+        if self.is_bound and self.data.get('depends_on'):
+            try:
+                # Get the ID of the parent question from the submitted data
+                depends_on_id = int(self.data.get('depends_on'))
+                # Update the queryset for the depends_on_option field
+                self.fields['depends_on_option'].queryset = Option.objects.filter(question_id=depends_on_id)
+            except (ValueError, TypeError):
+                # Handle cases where depends_on is not a valid ID
+                self.fields['depends_on_option'].queryset = Option.objects.none()
+
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        depends_on_question = cleaned_data.get("depends_on")
+        depends_on_option = cleaned_data.get("depends_on_option")
+
+        if depends_on_question and depends_on_option:
+            # Check if the selected option belongs to the selected question
+            if not depends_on_question.options.filter(pk=depends_on_option.pk).exists():
+                self.add_error('depends_on_option', forms.ValidationError("La opción seleccionada no pertenece a la pregunta de la que depende."))
+        
+        # If only one is set, that's an error
+        elif depends_on_question and not depends_on_option:
+            self.add_error('depends_on_option', forms.ValidationError("Debe seleccionar una opción para la pregunta de la que depende."))
+        elif not depends_on_question and depends_on_option:
+            self.add_error('depends_on_question', forms.ValidationError("Debe seleccionar una pregunta si selecciona una opción de dependencia."))
+
+        return cleaned_data
+
 class AnswersForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,84 +80,77 @@ class AnswersForm(forms.Form):
 
 def build_answers_form_for_section(section):
     fields = {}
-    for q in section.questions.all():
+    questions = section.questions.prefetch_related('options', 'depends_on').all()
+    for q in questions:
         field_name = f"question_{q.pk}"
+        field_kwargs = {
+            'label': q.text,
+            'help_text': q.help_text,
+            'required': q.required,
+        }
+
         if q.qtype == QuestionType.TEXT:
-            fields[field_name] = forms.CharField(
-                label=q.text,
-                help_text=q.help_text,
-                required=q.required,
-                widget=forms.Textarea if q.max_choices == 0 else forms.TextInput, # max_choices 0 for textarea
+            field = forms.CharField(
+                **field_kwargs,
+                widget=forms.Textarea if q.max_choices == 0 else forms.TextInput,
             )
         elif q.qtype == QuestionType.INTEGER:
-            fields[field_name] = forms.IntegerField(
-                label=q.text,
-                help_text=q.help_text,
-                required=q.required,
-            )
+            field = forms.IntegerField(**field_kwargs)
         elif q.qtype == QuestionType.DECIMAL:
-            fields[field_name] = forms.DecimalField(
-                label=q.text,
-                help_text=q.help_text,
-                required=q.required,
-            )
+            field = forms.DecimalField(**field_kwargs)
         elif q.qtype == QuestionType.BOOL:
-            fields[field_name] = forms.BooleanField(
-                label=q.text,
-                help_text=q.help_text,
-                required=q.required,
-                widget=forms.CheckboxInput,
-            )
+            field = forms.BooleanField(**field_kwargs, widget=forms.CheckboxInput)
         elif q.qtype == QuestionType.DATE:
-            fields[field_name] = forms.DateField(
-                label=q.text,
-                help_text=q.help_text,
-                required=q.required,
-                widget=forms.DateInput(attrs={'type': 'date'}),
-            )
+            field = forms.DateField(**field_kwargs, widget=forms.DateInput(attrs={'type': 'date'}))
         elif q.qtype in [QuestionType.SINGLE, QuestionType.MULTI, QuestionType.LIKERT]:
             choices = [(option.pk, option.label) for option in q.options.all()]
             if q.qtype == QuestionType.SINGLE or q.qtype == QuestionType.LIKERT:
                 widget = forms.RadioSelect
                 if q.qtype == QuestionType.SINGLE and q.single_choice_display == SingleChoiceDisplayType.SELECT:
                     widget = forms.Select
-                fields[field_name] = forms.ChoiceField(
-                    label=q.text,
-                    help_text=q.help_text,
-                    required=q.required,
+                field = forms.ChoiceField(
+                    **field_kwargs,
                     choices=choices,
                     widget=widget,
                 )
             elif q.qtype == QuestionType.MULTI:
-                fields[field_name] = forms.MultipleChoiceField(
-                    label=q.text,
-                    help_text=q.help_text,
-                    required=q.required,
+                field = forms.MultipleChoiceField(
+                    **field_kwargs,
                     choices=choices,
                     widget=forms.CheckboxSelectMultiple,
                 )
-        elif q.qtype == QuestionType.UBICACION: # New UBICACION type handling
+        elif q.qtype == QuestionType.UBICACION:
+            # For UBICACION, we create multiple fields. We will attach the question object to the main one.
             fields[f"{field_name}_municipio"] = ModelChoiceField(
                 queryset=Municipio.objects.all(),
                 label="Municipio",
                 required=q.required,
                 empty_label="Selecciona un municipio",
             )
-            fields[f"{field_name}_ubicacion"] = forms.ChoiceField(
+            ubicacion_field = forms.ChoiceField(
                 label="Barrio/Localidad",
                 required=q.required,
                 choices=[],
             )
+            ubicacion_field.question = q # Attach question here
+            fields[f"{field_name}_ubicacion"] = ubicacion_field
+
             fields[f"{field_name}_loc"] = forms.CharField(
                 label="LOC",
-                required=False, # This will be autopopulated
+                required=False,
                 widget=forms.TextInput(attrs={'readonly': 'readonly'}),
             )
             fields[f"{field_name}_zona"] = forms.CharField(
                 label="ZONA",
-                required=False, # This will be autopopulated
+                required=False,
                 widget=forms.TextInput(attrs={'readonly': 'readonly'}),
             )
+            continue # Skip the generic field attachment for this type
+        else:
+            continue # Skip unknown question types
+
+        field.question = q
+        fields[field_name] = field
 
     class DynamicAnswersForm(forms.Form):
         def __init__(self, *args, **kwargs):

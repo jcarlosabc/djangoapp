@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Survey, Section, Question, Option, Interviewer, ResponseSet, Answer, Municipio, Ubicacion, UbicacionListFile # Updated import
+from .forms import QuestionAdminForm
 
 class OptionInline(admin.TabularInline):
     model = Option
@@ -32,6 +33,7 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
+    form = QuestionAdminForm
     list_display = ("section", "code", "qtype", "single_choice_display", "required", "order", "max_choices")
     list_filter = ("qtype", "required", "section__survey")
     inlines = [OptionInline]
@@ -39,8 +41,30 @@ class QuestionAdmin(admin.ModelAdmin):
         (None, {
             'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'single_choice_display', 'required', 'order', 'max_choices', 'ubicaciones') # Added 'ubicaciones'
         }),
-        # Removed 'GeoJSON Options' fieldset
+        ('Dependencia', {
+            'fields': ('depends_on', 'depends_on_option'),
+        }),
     )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "depends_on_option":
+            # Get the current object being edited
+            obj_id = request.resolver_match.kwargs.get('object_id')
+            if obj_id:
+                try:
+                    question = self.get_object(request, obj_id)
+                    if question and question.depends_on:
+                        kwargs["queryset"] = Option.objects.filter(question=question.depends_on)
+                    else:
+                        kwargs["queryset"] = Option.objects.none()
+                except self.model.DoesNotExist:
+                     kwargs["queryset"] = Option.objects.none()
+            else:
+                kwargs["queryset"] = Option.objects.none()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    class Media:
+        js = ('admin/js/jquery.init.js', 'admin/js/question_admin.js')
 
 @admin.register(Interviewer)
 class InterviewerAdmin(admin.ModelAdmin):

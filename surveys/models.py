@@ -90,6 +90,23 @@ class Question(models.Model):
         help_text="Solo para preguntas de opción única (single)"
     )
 
+    depends_on = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='dependent_questions',
+        help_text="La pregunta de la que esta depende"
+    )
+    depends_on_option = models.ForeignKey(
+        'surveys.Option',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='triggering_questions',
+        help_text="La opción que activa esta pregunta"
+    )
+
     class Meta:
         unique_together = ("section", "code")
         ordering = ["section__order", "order"]

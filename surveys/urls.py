@@ -15,4 +15,5 @@ urlpatterns = [
     # AJAX
     path('ajax/get_ubicaciones/', views.get_ubicaciones, name='get_ubicaciones'),
     path('ajax/get_ubicacion_details/', views.get_ubicacion_details, name='get_ubicacion_details'),
+    path('ajax/get_question_options/', views.get_question_options, name='get_question_options'),
 ]

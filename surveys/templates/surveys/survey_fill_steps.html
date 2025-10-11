@@ -115,20 +115,38 @@
   <div class="step bg-white p-6 rounded-xl shadow-md">
     <h2 class="text-lg font-semibold mb-4 border-b pb-2">Sección {{ current_section_idx|add:1 }}: {{ section.title }}</h2>
     
-    {% with questions=answers_form.visible_fields %}
     <div class="grid sm:grid-cols-2 gap-6">
-      {% for field in questions %}
-        <div class="field" data-required="{{ field.field.required|yesno:'1,0' }}">
-          <label class="block text-base font-medium text-gray-800 mb-3">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
-          <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
-            {{ field }}
-          </div>
-          {% for e in field.errors %}<p class="text-xs text-red-600 mt-2">{{ e }}</p>{% endfor %}
-          <p class="client-error text-xs text-red-600 mt-2 hidden"></p>
+      {% for field in answers_form %}
+        {% if field.field.question %}
+        <div class="question-wrapper"
+             data-question-id="{{ field.field.question.pk }}"
+             {% if field.field.question.depends_on %}
+             data-depends-on-question="{{ field.field.question.depends_on.pk }}"
+             data-depends-on-option="{{ field.field.question.depends_on_option.pk }}"
+             style="display: none;"
+             {% endif %}>
+            <div class="field" data-required="{{ field.field.required|yesno:'1,0' }}">
+              <label class="block text-base font-medium text-gray-800 mb-3">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
+              <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
+                {{ field }}
+              </div>
+              {% for e in field.errors %}<p class="text-xs text-red-600 mt-2">{{ e }}</p>{% endfor %}
+              <p class="client-error text-xs text-red-600 mt-2 hidden"></p>
+            </div>
         </div>
+        {% else %}
+            {# This handles fields that don't have a question object, like the ubicacion fields #}
+            <div class="field" data-required="{{ field.field.required|yesno:'1,0' }}">
+              <label class="block text-base font-medium text-gray-800 mb-3">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
+              <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
+                {{ field }}
+              </div>
+              {% for e in field.errors %}<p class="text-xs text-red-600 mt-2">{{ e }}</p>{% endfor %}
+              <p class="client-error text-xs text-red-600 mt-2 hidden"></p>
+            </div>
+        {% endif %}
       {% endfor %}
     </div>
-    {% endwith %}
   </div>
   {% endif %}
 
@@ -373,6 +391,59 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // --- Dependency Logic ---
+    const formContainer = document.querySelector('form');
+
+    function updateDependentQuestions() {
+        console.log("--- Checking Dependencies ---");
+        const allQuestions = document.querySelectorAll('.question-wrapper');
+        const formData = new FormData(formContainer);
+        
+        const questionStates = {};
+        for (const [name, value] of formData.entries()) {
+            const match = name.match(/question_(\d+)/);
+            if (match) {
+                const qId = match[1];
+                if (!questionStates[qId]) {
+                    questionStates[qId] = [];
+                }
+                questionStates[qId].push(value);
+            }
+        }
+        console.log("Current form state:", questionStates);
+
+        allQuestions.forEach(questionWrapper => {
+            const questionId = questionWrapper.dataset.questionId;
+            const dependsOnQuestion = questionWrapper.dataset.dependsOnQuestion;
+            const dependsOnOption = questionWrapper.dataset.dependsOnOption;
+
+            if (dependsOnQuestion && dependsOnOption) {
+                console.log(`Question ${questionId} depends on Q${dependsOnQuestion} option ${dependsOnOption}`);
+                const parentState = questionStates[dependsOnQuestion];
+                console.log(`Parent ${dependsOnQuestion} state is:`, parentState);
+
+                if (parentState && parentState.includes(dependsOnOption)) {
+                    console.log(`-> Met. Showing Q${questionId}`);
+                    questionWrapper.style.display = '';
+                } else {
+                    console.log(`-> Not met. Hiding Q${questionId}`);
+                    questionWrapper.style.display = 'none';
+                }
+            }
+        });
+        console.log("--- Finished Dependencies ---");
+    }
+
+    // Initial check on page load
+    updateDependentQuestions();
+
+    // Add event listener to the form
+    if (formContainer) {
+        formContainer.addEventListener('change', updateDependentQuestions);
+    }
+
+
 });
 </script>
 

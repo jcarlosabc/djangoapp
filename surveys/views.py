@@ -6,7 +6,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.urls import reverse
 from django.contrib import messages # <-- Añadido
-from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES, Ubicacion, Municipio, Interviewer
+from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES, Ubicacion, Municipio, Interviewer, QuestionType
 from .forms import ResponseSetForm, build_answers_form_for_section
 from .forms_signup import SignUpForm
 
@@ -244,3 +244,17 @@ def get_ubicacion_details(request):
     ubicacion_id = request.GET.get('ubicacion_id')
     ubicacion = get_object_or_404(Ubicacion, pk=ubicacion_id)
     return JsonResponse({'loc': ubicacion.loc, 'zona': ubicacion.zona})
+
+def get_question_options(request):
+    question_id = request.GET.get('question_id')
+    if not question_id:
+        return JsonResponse([], safe=False)
+    try:
+        question = Question.objects.get(pk=question_id)
+        # Asegurarse de que la pregunta es de tipo single o multi
+        if question.qtype not in [QuestionType.SINGLE, QuestionType.MULTI]:
+            return JsonResponse([], safe=False)
+        options = list(question.options.values('id', 'label'))
+        return JsonResponse(options, safe=False)
+    except Question.DoesNotExist:
+        return JsonResponse([], safe=False)
