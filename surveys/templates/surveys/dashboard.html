@@ -70,37 +70,40 @@
   </div>
 </div>
 
-<!-- Interviewer Stats Table -->
+<!-- Interviewer Stats Table (Grouped) -->
 <div class="mt-8 bg-white p-6 rounded-lg shadow">
-  <h2 class="text-xl font-semibold mb-4">Rendimiento por Encuestador</h2>
+  <h2 class="text-xl font-semibold mb-4">Rendimiento por Encuestador (Desglosado por Encuesta)</h2>
   <div class="overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
         <tr>
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Encuestador</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº de Respuestas</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última Actividad</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desglose por Encuesta</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Respuestas</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        {% for interviewer in interviewers_stats %}
+        {% for name, data in interviewers_stats_grouped.items %}
           <tr>
+            <td class="px-6 py-4 align-top">
+              <div class="text-sm font-medium text-gray-900">{{ data.details.full_name }}</div>
+              <div class="text-sm text-gray-500">{{ data.details.document }}</div>
+            </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ interviewer.full_name }}</div>
-              <div class="text-sm text-gray-500">{{ interviewer.document_type }} {{ interviewer.document_number }}</div>
+                <ul class="text-sm text-gray-800 space-y-1">
+                    {% for survey in data.surveys %}
+                        <li class="flex justify-between">
+                            <span>{{ survey.name }}:</span>
+                            <span class="font-semibold">{{ survey.count }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">{{ interviewer.response_count }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {% if interviewer.last_response_date %}
-                {{ interviewer.last_response_date|date:"d/m/Y, P" }}
-              {% else %}
-                Sin actividad
-              {% endif %}
-            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold align-top">{{ data.total_responses }}</td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">No hay encuestadores para mostrar.</td>
+            <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">No hay actividad de encuestadores para mostrar.</td>
           </tr>
         {% endfor %}
       </tbody>

@@ -451,17 +451,47 @@ def dashboard_view(request):
     ).order_by('-last_response_date')
 
     # Anotar cada encuestador con el número de respuestas y la fecha de la última respuesta
-    interviewers_stats = Interviewer.objects.annotate(
-        response_count=Count('responseset'),
-        last_response_date=Max('responseset__created_at')
-    ).order_by('-response_count', 'full_name')
+    # interviewers_stats = Interviewer.objects.annotate(
+    #     response_count=Count('responseset'),
+    #     last_response_date=Max('responseset__created_at')
+    # ).order_by('-response_count', 'full_name')
+
+    # Nuevo: Obtener estadísticas agrupadas por encuestador y luego por encuesta
+    interviewer_survey_stats = ResponseSet.objects.filter(interviewer__isnull=False).values(
+        'interviewer__full_name',
+        'interviewer__document_type',
+        'interviewer__document_number',
+        'survey__name'
+    ).annotate(
+        count=Count('id')
+    ).order_by('interviewer__full_name', 'survey__name')
+
+    # Agrupar los resultados en una estructura anidada para la plantilla
+    grouped_stats = {}
+    for item in interviewer_survey_stats:
+        interviewer_name = item['interviewer__full_name']
+        if interviewer_name not in grouped_stats:
+            grouped_stats[interviewer_name] = {
+                'details': {
+                    'full_name': interviewer_name,
+                    'document': f"{item['interviewer__document_type']} {item['interviewer__document_number']}"
+                },
+                'surveys': [],
+                'total_responses': 0
+            }
+        
+        grouped_stats[interviewer_name]['surveys'].append({
+            'name': item['survey__name'],
+            'count': item['count']
+        })
+        grouped_stats[interviewer_name]['total_responses'] += item['count']
 
     context = {
         'total_surveys': total_surveys,
         'total_responses': total_responses,
         'total_interviewers': total_interviewers,
         'surveys_stats': surveys_stats,
-        'interviewers_stats': interviewers_stats,
+        'interviewers_stats_grouped': grouped_stats,
     }
     return render(request, 'surveys/dashboard.html', context)
 
