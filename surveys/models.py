@@ -111,6 +111,9 @@ class Question(models.Model):
     depends_on_value_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Valor mínimo para activar la pregunta (para respuestas numéricas)")
     depends_on_value_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Valor máximo para activar la pregunta (para respuestas numéricas)")
 
+    copy_from = models.CharField(max_length=100, blank=True, help_text="Nombre del campo del cual copiar la respuesta (ej. 'identificacion' o 'question_123').")
+    copy_text_from = models.BooleanField(default=False, help_text="Si se marca, el texto de la pregunta se copiará del campo seleccionado.")
+
     class Meta:
         unique_together = ("section", "code")
         ordering = ["section__order", "order"]

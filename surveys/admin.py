@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from .models import Survey, Section, Question, Option, Interviewer, ResponseSet, Answer, Municipio, Ubicacion, UbicacionListFile # Updated import
 from .forms import QuestionAdminForm
 
@@ -34,17 +35,38 @@ class SectionAdmin(admin.ModelAdmin):
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     form = QuestionAdminForm
-    list_display = ("section", "code", "qtype", "single_choice_display", "required", "order", "max_choices")
+    list_display = ("section", "code", "qtype", "single_choice_display", "required", "order", "max_choices", "copy_from")
     list_filter = ("qtype", "required", "section__survey")
     inlines = [OptionInline]
     fieldsets = (
         (None, {
-            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'single_choice_display', 'required', 'order', 'max_choices', 'ubicaciones') # Added 'ubicaciones'
+            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'single_choice_display', 'required', 'order', 'max_choices', 'ubicaciones')
         }),
         ('Dependencia', {
             'fields': ('depends_on', 'depends_on_option', 'depends_on_value_min', 'depends_on_value_max'),
         }),
+        ('Copia de Respuestas', {
+            'fields': ('copy_from', 'copy_text_from'),
+        }),
     )
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'copy_from':
+            choices = [('', '---------')]
+            # Add ResponseSetForm fields
+            choices.extend([
+                ('identificacion', 'Identificación (del encuestado)'),
+                ('full_name', 'Nombre Completo (del encuestado)'),
+                ('email', 'Correo Electrónico (del encuestado)'),
+                ('phone', 'Teléfono (del encuestado)'),
+            ])
+
+            # Add all questions
+            for q in Question.objects.all().order_by('section__survey__name', 'section__order', 'order'):
+                choices.append((f'question_{q.pk}', f'{q.section.survey.name} / {q.section.title} / {q.text[:50]}...'))
+
+            return forms.ChoiceField(choices=choices, required=False)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "depends_on_option":
