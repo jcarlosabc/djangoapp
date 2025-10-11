@@ -435,6 +435,71 @@ def get_ubicacion_details(request):
     ubicacion = get_object_or_404(Ubicacion, pk=ubicacion_id)
     return JsonResponse({'loc': ubicacion.loc, 'zona': ubicacion.zona})
 
+from django.db.models import Count, Avg, Min, Max
+
+@login_required
+def survey_stats_view(request, survey_code):
+    survey = get_object_or_404(Survey, code=survey_code)
+    response_count = ResponseSet.objects.filter(survey=survey).count()
+    
+    questions = Question.objects.filter(section__survey=survey).order_by('section__order', 'order')
+
+    stats_data = []
+    for q in questions:
+        q_stats = {
+            'text': q.text,
+            'type': q.qtype,
+            'data': None
+        }
+        
+        if q.qtype in [QuestionType.SINGLE, QuestionType.MULTI, QuestionType.LIKERT]:
+            options_with_counts = []
+            # Usamos anotaciones de Django para contar las respuestas por opción
+            options = q.options.all().annotate(count=Count('selected_in')).order_by('-count')
+            total_votes = sum(opt.count for opt in options)
+            
+            for option in options:
+                percentage = (option.count / total_votes * 100) if total_votes > 0 else 0
+                options_with_counts.append({
+                    'label': option.label,
+                    'count': option.count,
+                    'percentage': round(percentage, 2)
+                })
+            
+            q_stats['data'] = {'options': options_with_counts, 'total_votes': total_votes}
+
+        elif q.qtype in [QuestionType.INTEGER, QuestionType.DECIMAL]:
+            agg_field = 'integer_answer' if q.qtype == QuestionType.INTEGER else 'decimal_answer'
+            result = Answer.objects.filter(question=q, response__survey=survey).aggregate(
+                avg=Avg(agg_field),
+                min=Min(agg_field),
+                max=Max(agg_field)
+            )
+            # Redondear el promedio si no es nulo
+            if result['avg'] is not None:
+                result['avg'] = round(result['avg'], 2)
+            q_stats['data'] = result
+
+        elif q.qtype == QuestionType.BOOL:
+            counts = Answer.objects.filter(question=q, response__survey=survey).values('bool_answer').annotate(count=Count('id'))
+            result = {'true': 0, 'false': 0}
+            for item in counts:
+                if item['bool_answer'] == True:
+                    result['true'] = item['count']
+                elif item['bool_answer'] == False:
+                    result['false'] = item['count']
+            q_stats['data'] = result
+
+        stats_data.append(q_stats)
+
+    context = {
+        'survey': survey,
+        'response_count': response_count,
+        'stats_data': stats_data
+    }
+    return render(request, 'surveys/survey_stats.html', context)
+
+
 def get_question_dependency_data(request):
     question_id = request.GET.get('question_id')
     if not question_id:

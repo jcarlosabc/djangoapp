@@ -15,8 +15,9 @@
         <h2 class="font-semibold text-lg">{{ s.name }}</h2>
         <p class="text-sm text-gray-600">Código: {{ s.code }}</p>
       </div>
-      <div class="mt-4">
+      <div class="mt-4 flex space-x-2">
         <a href="{% url 'surveys:fill' s.code %}" class="px-3 py-2 rounded bg-blue-600 text-white text-sm">Responder</a>
+        <a href="{% url 'surveys:stats' s.code %}" class="px-3 py-2 rounded bg-gray-200 text-gray-800 text-sm">Estadísticas</a>
       </div>
     </div>
   {% empty %}

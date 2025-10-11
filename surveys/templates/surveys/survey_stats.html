@@ -1,0 +1,78 @@
+{% extends "surveys/base.html" %}
+
+{% block title %}Estadísticas de {{ survey.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-bold">{{ survey.name }}</h1>
+  <p class="text-lg text-gray-600">Estadísticas de la Encuesta</p>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow mb-8">
+  <h2 class="text-xl font-semibold">Resumen General</h2>
+  <p class="mt-2">Número total de respuestas: <span class="font-bold text-blue-600">{{ response_count }}</span></p>
+</div>
+
+<div class="space-y-6">
+  {% for question_stat in stats_data %}
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h3 class="font-semibold text-lg">{{ question_stat.text }}</h3>
+      <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">Tipo: {{ question_stat.type }}</span>
+
+      <div class="mt-4">
+        {% if question_stat.type == 'single' or question_stat.type == 'multi' or question_stat.type == 'likert' %}
+          {% with stats=question_stat.data %}
+            <p class="text-sm text-gray-500 mb-3">Total de votos: {{ stats.total_votes }}</p>
+            <div class="space-y-2">
+              {% for option in stats.options %}
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm font-medium text-gray-700">{{ option.label }} ({{ option.count }} votos)</span>
+                    <span class="text-sm font-medium text-gray-500">{{ option.percentage }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ option.percentage }}%"></div>
+                  </div>
+                </div>
+              {% empty %}
+                <p class="text-sm text-gray-500">Aún no hay respuestas para esta pregunta.</p>
+              {% endfor %}
+            </div>
+          {% endwith %}
+        {% elif question_stat.type == 'int' or question_stat.type == 'dec' %}
+          {% with stats=question_stat.data %}
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p class="text-sm text-gray-500">Promedio</p>
+                <p class="text-xl font-bold">{{ stats.avg|default:"N/A" }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Mínimo</p>
+                <p class="text-xl font-bold">{{ stats.min|default:"N/A" }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Máximo</p>
+                <p class="text-xl font-bold">{{ stats.max|default:"N/A" }}</p>
+              </div>
+            </div>
+          {% endwith %}
+        {% elif question_stat.type == 'bool' %}
+          {% with stats=question_stat.data %}
+            <div class="flex space-x-4">
+              <p>Sí: <span class="font-bold">{{ stats.true }}</span></p>
+              <p>No: <span class="font-bold">{{ stats.false }}</span></p>
+            </div>
+          {% endwith %}
+        {% else %}
+          <p class="text-sm text-gray-500">No hay visualización de estadísticas para este tipo de pregunta.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="mt-8">
+    <a href="{% url 'surveys:list' %}" class="text-blue-600 hover:underline">&larr; Volver a la lista de encuestas</a>
+</div>
+
+{% endblock %}
