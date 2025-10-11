@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from .models import Survey, Section, Question, Option, Interviewer, ResponseSet, Answer, Municipio, Ubicacion, UbicacionListFile # Updated import
 
 class OptionInline(admin.TabularInline):
@@ -32,15 +33,32 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ("section", "code", "qtype", "required", "order", "max_choices")
+    list_display = ("section", "code", "qtype", "required", "order", "max_choices", "copy_from")
     list_filter = ("qtype", "required", "section__survey")
     inlines = [OptionInline]
     fieldsets = (
         (None, {
-            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'required', 'order', 'max_choices', 'ubicaciones') # Added 'ubicaciones'
+            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'required', 'order', 'max_choices', 'ubicaciones', 'copy_from', 'copy_text_from')
         }),
-        # Removed 'GeoJSON Options' fieldset
     )
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'copy_from':
+            choices = [('', '---------')]
+            # Add ResponseSetForm fields
+            choices.extend([
+                ('identificacion', 'Identificación (del encuestado)'),
+                ('full_name', 'Nombre Completo (del encuestado)'),
+                ('email', 'Correo Electrónico (del encuestado)'),
+                ('phone', 'Teléfono (del encuestado)'),
+            ])
+
+            # Add all questions
+            for q in Question.objects.all().order_by('section__survey__name', 'section__order', 'order'):
+                choices.append((f'question_{q.pk}', f'{q.section.survey.name} / {q.section.title} / {q.text[:50]}...'))
+
+            return forms.ChoiceField(choices=choices, required=False)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 @admin.register(Interviewer)
 class InterviewerAdmin(admin.ModelAdmin):

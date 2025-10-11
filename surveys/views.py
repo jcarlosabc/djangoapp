@@ -221,8 +221,29 @@ def survey_fill(request, survey_code):
             return redirect('surveys:list')
         
         current_section = sections[current_section_idx]
+
+        # Lógica para copiar respuestas de preguntas anteriores
+        initial_data = request.session.get('survey_answers', {}).get(str(current_section.pk), {})
+        for question in current_section.questions.all():
+            if question.copy_from:
+                source_field_name = question.copy_from
+                copied_value = None
+
+                # Buscar en los datos del encuestado
+                if source_field_name in request.session.get('respondent_data', {}):
+                    copied_value = request.session['respondent_data'][source_field_name]
+                else:
+                    # Buscar en las respuestas de otras preguntas
+                    for section_id, answers in request.session.get('survey_answers', {}).items():
+                        if source_field_name in answers:
+                            copied_value = answers[source_field_name]
+                            break
+                
+                if copied_value is not None:
+                    initial_data[f'question_{question.pk}'] = copied_value
+
         AnswersForm = build_answers_form_for_section(current_section)
-        answers_form = AnswersForm(initial=request.session.get('survey_answers', {}).get(str(current_section.pk), {}))
+        answers_form = AnswersForm(initial=initial_data)
         context = {
             'survey': survey,
             'section': current_section,

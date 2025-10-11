@@ -76,6 +76,8 @@ class Question(models.Model):
     required = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=1)
     max_choices = models.PositiveIntegerField(default=0, help_text="0 = sin límite")
+    copy_from = models.CharField(max_length=100, blank=True, help_text="Nombre del campo del cual copiar la respuesta (ej. 'identificacion' o 'question_123').")
+    copy_text_from = models.BooleanField(default=False, help_text="Si se marca, el texto de la pregunta se copiará del campo seleccionado.")
     # New field for linking to Barrio model
     ubicaciones = models.ManyToManyField(Ubicacion, blank=True, related_name="questions")
 

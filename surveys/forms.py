@@ -120,6 +120,13 @@ def build_answers_form_for_section(section):
                 widget=forms.TextInput(attrs={'readonly': 'readonly'}),
             )
 
+        if q.copy_from:
+            field = fields.get(field_name)
+            if field:
+                field.widget.attrs['data-copy-from'] = q.copy_from
+
+
+
     class DynamicAnswersForm(forms.Form):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
