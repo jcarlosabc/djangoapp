@@ -133,10 +133,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("
 Resolviendo dependencias entre preguntas..."))
         for index, row in df.iterrows():
-            if pd.notna(row.get('depends_on_question')) and pd.notna(row.get('depends_on_option')):
+            if pd.notna(row.get('depends_on_question')):
                 dependent_question_text = row['text'].strip()
                 parent_question_text = row['depends_on_question'].strip()
-                trigger_option_text = row['depends_on_option'].strip()
 
                 dependent_question = questions_cache.get(dependent_question_text)
                 parent_question = questions_cache.get(parent_question_text)
@@ -145,16 +144,33 @@ Resolviendo dependencias entre preguntas..."))
                     self.stdout.write(self.style.WARNING(f"ADVERTENCIA: No se pudo resolver la dependencia para '{dependent_question_text}'. Pregunta o padre no encontrados."))
                     continue
                 
-                try:
-                    trigger_option = Option.objects.get(question=parent_question, label=trigger_option_text)
-                    dependent_question.depends_on = parent_question
-                    dependent_question.depends_on_option = trigger_option
+                dependent_question.depends_on = parent_question
+
+                # Caso 1: Dependencia de Opción
+                if pd.notna(row.get('depends_on_option')):
+                    trigger_option_text = str(row['depends_on_option']).strip()
+                    try:
+                        trigger_option = Option.objects.get(question=parent_question, label=trigger_option_text)
+                        dependent_question.depends_on_option = trigger_option
+                        dependent_question.depends_on_value_min = None
+                        dependent_question.depends_on_value_max = None
+                        dependent_question.save()
+                        self.stdout.write(f"  - Dependencia de opción: '{dependent_question.text}' depende de '{parent_question.text}' = '{trigger_option.label}'.")
+                    except Option.DoesNotExist:
+                        self.stdout.write(self.style.WARNING(f"ADVERTENCIA: No se encontró la opción '{trigger_option_text}' para '{parent_question_text}'."))
+                    except Exception as e:
+                        self.stderr.write(self.style.ERROR(f"Error al establecer dependencia de opción para '{dependent_question.text}': {e}"))
+                
+                # Caso 2: Dependencia de Valor Numérico
+                elif pd.notna(row.get('depends_on_value_min')) or pd.notna(row.get('depends_on_value_max')):
+                    min_val = row.get('depends_on_value_min')
+                    max_val = row.get('depends_on_value_max')
+                    
+                    dependent_question.depends_on_option = None
+                    dependent_question.depends_on_value_min = min_val if pd.notna(min_val) else None
+                    dependent_question.depends_on_value_max = max_val if pd.notna(max_val) else None
                     dependent_question.save()
-                    self.stdout.write(f"  - Dependencia establecida: '{dependent_question.text}' depende de '{parent_question.text}' = '{trigger_option.label}'.")
-                except Option.DoesNotExist:
-                    self.stdout.write(self.style.WARNING(f"ADVERTENCIA: No se encontró la opción '{trigger_option_text}' para la pregunta '{parent_question_text}' al crear la dependencia."))
-                except Exception as e:
-                    self.stderr.write(self.style.ERROR(f"Error al establecer dependencia para '{dependent_question.text}': {e}"))
+                    self.stdout.write(f"  - Dependencia numérica: '{dependent_question.text}' depende de '{parent_question.text}' (Rango: {min_val}-{max_val}).")
 
         self.stdout.write(self.style.SUCCESS("
 ¡Proceso de carga finalizado con éxito!"))

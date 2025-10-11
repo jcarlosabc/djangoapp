@@ -43,7 +43,7 @@
   <div class="mt-8 p-4 bg-gray-50 rounded-lg">
     <div class="flex justify-between items-center mb-2">
       <h3 class="font-semibold text-lg">Estructura del Archivo Excel</h3>
-      <a href="{% static 'surveys/templates/plantilla_encuesta.xlsx' %}" download class="px-3 py-1 rounded bg-gray-200 text-gray-800 text-sm font-medium hover:bg-gray-300">
+      <a href="{% static 'surveys/templates/plantilla_encuesta_avanzada.xlsx' %}" download class="px-3 py-1 rounded bg-gray-200 text-gray-800 text-sm font-medium hover:bg-gray-300">
         Descargar Plantilla
       </a>
     </div>
@@ -64,7 +64,9 @@
       <li><strong>help_text:</strong> Un texto de ayuda para la pregunta.</li>
       <li><strong>choices:</strong> Para tipos <code>radio</code>, <code>select</code>, o <code>multi</code>, una lista de opciones separadas por comas (ej: Opción 1, Opción 2, Opción 3).</li>
       <li><strong>depends_on_question:</strong> El texto exacto de la pregunta de la que esta depende.</li>
-      <li><strong>depends_on_option:</strong> El texto exacto de la opción que debe ser seleccionada para que esta pregunta aparezca.</li>
+      <li><strong>depends_on_option:</strong> El texto exacto de la opción que debe ser seleccionada para que esta pregunta aparezca (para preguntas tipo radio/select).</li>
+      <li><strong>depends_on_value_min:</strong> El valor numérico mínimo (inclusivo) que debe tener la pregunta padre para que esta aparezca.</li>
+      <li><strong>depends_on_value_max:</strong> El valor numérico máximo (inclusivo) que debe tener la pregunta padre para que esta aparezca.</li>
     </ul>
   </div>
 </div>
