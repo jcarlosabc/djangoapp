@@ -6,9 +6,160 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.urls import reverse
 from django.contrib import messages # <-- Añadido
-from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES, Ubicacion, Municipio, Interviewer, QuestionType
-from .forms import ResponseSetForm, build_answers_form_for_section
+from .models import Survey, Section, Question, ResponseSet, Answer, DOCUMENT_TYPES, Ubicacion, Municipio, Interviewer, QuestionType, Option, SingleChoiceDisplayType, SingleChoiceDisplayType
+from .forms import ResponseSetForm, build_answers_form_for_section, SurveyUploadForm
 from .forms_signup import SignUpForm
+import pandas as pd
+from django.utils.text import slugify
+
+def _process_survey_excel(excel_file, status_callback):
+    try:
+        df = pd.read_excel(excel_file)
+    except Exception as e:
+        status_callback('error', f"Error al leer el archivo Excel: {e}")
+        return
+
+    required_columns = ['survey_title', 'text', 'type', 'order']
+    if not all(col in df.columns for col in required_columns):
+        status_callback('error', f"El archivo Excel debe contener las siguientes columnas: {', '.join(required_columns)}")
+        return
+
+    surveys_cache = {}
+    sections_cache = {}
+    questions_cache = {}
+
+    status_callback('info', "Iniciando el proceso de carga de la encuesta...")
+
+    for index, row in df.iterrows():
+        try:
+            survey_title = row['survey_title'].strip()
+            if survey_title not in surveys_cache:
+                survey_code = slugify(survey_title)
+                survey, created = Survey.objects.get_or_create(
+                    code=survey_code,
+                    defaults={'name': survey_title, 'description': 'Encuesta cargada desde Excel.'}
+                )
+                surveys_cache[survey_title] = survey
+                if created:
+                    status_callback('info', f"Encuesta '{survey.name}' creada.")
+            survey = surveys_cache[survey_title]
+
+            if survey.id not in sections_cache:
+                section, created = Section.objects.get_or_create(
+                    survey=survey,
+                    order=1,
+                    defaults={'title': 'Sección Principal'}
+                )
+                sections_cache[survey.id] = section
+                if created:
+                    status_callback('info', f"Sección 'Sección Principal' creada para '{survey.name}'.")
+            section = sections_cache[survey.id]
+
+            question_text = row['text'].strip()
+            question_type = row['type'].strip().lower()
+            question_order = int(row['order'])
+            
+            type_mapping = {
+                'radio': (QuestionType.SINGLE, SingleChoiceDisplayType.RADIO),
+                'select': (QuestionType.SINGLE, SingleChoiceDisplayType.SELECT),
+                'text': (QuestionType.TEXT, None),
+                'number': (QuestionType.INTEGER, None),
+                'textarea': (QuestionType.TEXT, None),
+                'multi': (QuestionType.MULTI, None),
+                'date': (QuestionType.DATE, None),
+                'boolean': (QuestionType.BOOL, None),
+            }
+
+            q_type, display_type = type_mapping.get(question_type, (QuestionType.TEXT, None))
+
+            question_code = slugify(f"{question_text[:40]}-{question_order}")
+
+            question_defaults = {
+                'text': question_text,
+                'qtype': q_type,
+                'order': question_order,
+                'required': str(row.get('required', 'True')).strip().lower() in ['true', '1', 'yes'],
+                'help_text': str(row.get('help_text', '')),
+            }
+            if display_type:
+                question_defaults['single_choice_display'] = display_type
+
+            question, created = Question.objects.update_or_create(
+                section=section,
+                code=question_code,
+                defaults=question_defaults
+            )
+            
+            questions_cache[question_text] = question
+
+            if created:
+                status_callback('info', f"  - Pregunta '{question.text}' creada.")
+            else:
+                status_callback('info', f"  - Pregunta '{question.text}' actualizada.")
+
+            if pd.notna(row.get('choices')):
+                choices_str = str(row['choices'])
+                Option.objects.filter(question=question).delete()
+                for i, choice_text in enumerate(choices_str.split(',')):
+                    choice_text = choice_text.strip()
+                    if choice_text:
+                        Option.objects.create(
+                            question=question,
+                            code=slugify(f"{question.code}-{choice_text[:20]}"),
+                            label=choice_text,
+                            order=i + 1
+                        )
+                status_callback('info', f"    - Opciones actualizadas para '{question.text}'.")
+
+        except Exception as e:
+            status_callback('error', f"Error procesando la fila {index + 2}: {e}")
+            continue
+
+    status_callback('info', "\nResolviendo dependencias entre preguntas...")
+    for index, row in df.iterrows():
+        if pd.notna(row.get('depends_on_question')) and pd.notna(row.get('depends_on_option')):
+            dependent_question_text = row['text'].strip()
+            parent_question_text = row['depends_on_question'].strip()
+            trigger_option_text = row['depends_on_option'].strip()
+
+            dependent_question = questions_cache.get(dependent_question_text)
+            parent_question = questions_cache.get(parent_question_text)
+
+            if not dependent_question or not parent_question:
+                status_callback('warning', f"ADVERTENCIA: No se pudo resolver la dependencia para '{dependent_question_text}'. Pregunta o padre no encontrados.")
+                continue
+            
+            try:
+                trigger_option = Option.objects.get(question=parent_question, label=trigger_option_text)
+                dependent_question.depends_on = parent_question
+                dependent_question.depends_on_option = trigger_option
+                dependent_question.save()
+                status_callback('info', f"  - Dependencia establecida: '{dependent_question.text}' depende de '{parent_question.text}' = '{trigger_option.label}'.")
+            except Option.DoesNotExist:
+                status_callback('warning', f"ADVERTENCIA: No se encontró la opción '{trigger_option_text}' para '{parent_question_text}'.")
+            except Exception as e:
+                status_callback('error', f"Error al establecer dependencia para '{dependent_question.text}': {e}")
+
+    status_callback('success', "\n¡Proceso de carga finalizado con éxito!")
+
+@login_required
+def survey_upload_view(request):
+    if request.method == 'POST':
+        form = SurveyUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            excel_file = request.FILES['excel_file']
+            
+            # Usamos una función lambda para que los mensajes se agreguen al request
+            status_callback = lambda tag, msg: messages.add_message(request, getattr(messages, tag.upper(), messages.INFO), msg)
+            
+            _process_survey_excel(excel_file, status_callback)
+            
+            return redirect(request.path) # Redirige a la misma página para mostrar los mensajes
+    else:
+        form = SurveyUploadForm()
+
+    return render(request, 'surveys/survey_upload.html', {'form': form})
+
 
 def signup(request):
     if request.method == 'POST':

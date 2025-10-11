@@ -1,6 +1,22 @@
 from django import forms
-from django.forms import ModelChoiceField, ModelMultipleChoiceField
-from .models import Question, Option, QuestionType, Municipio, Ubicacion, Interviewer, SingleChoiceDisplayType # Added Interviewer
+from .models import ResponseSet, Answer, DOCUMENT_TYPES, Question, QuestionType, Interviewer, SingleChoiceDisplayType
+from django.contrib.auth.models import User
+
+class SurveyUploadForm(forms.Form):
+    excel_file = forms.FileField(
+        label="Archivo Excel",
+        help_text="Sube un archivo .xlsx con la estructura de la encuesta.",
+        widget=forms.ClearableFileInput(attrs={'class': 'mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none'}),
+        validators=[
+            lambda file: file.name.endswith('.xlsx') or forms.ValidationError("El archivo debe ser .xlsx")
+        ]
+    )
+
+class ResponseForm(forms.ModelForm):
+    class Meta:
+        model = ResponseSet
+        fields = []
+
 
 class ResponseSetForm(forms.Form):
     text_input_classes = 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
