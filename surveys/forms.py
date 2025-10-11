@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelChoiceField, ModelMultipleChoiceField
-from .models import Question, Option, QuestionType, Municipio, Ubicacion, Interviewer # Added Interviewer
+from .models import Question, Option, QuestionType, Municipio, Ubicacion, Interviewer, SingleChoiceDisplayType # Added Interviewer
 
 class ResponseSetForm(forms.Form):
     text_input_classes = 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
@@ -82,12 +82,15 @@ def build_answers_form_for_section(section):
         elif q.qtype in [QuestionType.SINGLE, QuestionType.MULTI, QuestionType.LIKERT]:
             choices = [(option.pk, option.label) for option in q.options.all()]
             if q.qtype == QuestionType.SINGLE or q.qtype == QuestionType.LIKERT:
+                widget = forms.RadioSelect
+                if q.qtype == QuestionType.SINGLE and q.single_choice_display == SingleChoiceDisplayType.SELECT:
+                    widget = forms.Select
                 fields[field_name] = forms.ChoiceField(
                     label=q.text,
                     help_text=q.help_text,
                     required=q.required,
                     choices=choices,
-                    widget=forms.RadioSelect,
+                    widget=widget,
                 )
             elif q.qtype == QuestionType.MULTI:
                 fields[field_name] = forms.MultipleChoiceField(

@@ -45,6 +45,10 @@ class QuestionType(models.TextChoices):
     LIKERT = "likert", "Likert (0..4)"
     UBICACION = "ubicacion", "Selección de Ubicación"
 
+class SingleChoiceDisplayType(models.TextChoices):
+    RADIO = "radio", "Botones de radio"
+    SELECT = "select", "Lista desplegable"
+
 class Municipio(models.Model):
     nombre = models.CharField(max_length=255, unique=True)
 
@@ -78,6 +82,13 @@ class Question(models.Model):
     max_choices = models.PositiveIntegerField(default=0, help_text="0 = sin límite")
     # New field for linking to Barrio model
     ubicaciones = models.ManyToManyField(Ubicacion, blank=True, related_name="questions")
+
+    single_choice_display = models.CharField(
+        max_length=10,
+        choices=SingleChoiceDisplayType.choices,
+        default=SingleChoiceDisplayType.RADIO,
+        help_text="Solo para preguntas de opción única (single)"
+    )
 
     class Meta:
         unique_together = ("section", "code")

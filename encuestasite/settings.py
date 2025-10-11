@@ -9,8 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-demo') # Use os.environ.get for SECRET_KEY
 DEBUG = os.environ.get('DEBUG', 'True') == 'True' # Use os.environ.get for DEBUG
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') # Use os.environ.get for ALLOWED_HOSTS
-
+# ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') # Use os.environ.get for ALLOWED_HOSTS
+ALLOWED_HOSTS = ['127.0.0.1']
 # New variable for data protection clause
 DATA_PROTECTION_CLAUSE_TEXT = os.environ.get('DATA_PROTECTION_CLAUSE_TEXT')
 

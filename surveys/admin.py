@@ -32,12 +32,12 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ("section", "code", "qtype", "required", "order", "max_choices")
+    list_display = ("section", "code", "qtype", "single_choice_display", "required", "order", "max_choices")
     list_filter = ("qtype", "required", "section__survey")
     inlines = [OptionInline]
     fieldsets = (
         (None, {
-            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'required', 'order', 'max_choices', 'ubicaciones') # Added 'ubicaciones'
+            'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'single_choice_display', 'required', 'order', 'max_choices', 'ubicaciones') # Added 'ubicaciones'
         }),
         # Removed 'GeoJSON Options' fieldset
     )
