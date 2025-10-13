@@ -383,6 +383,7 @@ def survey_fill(request, survey_code):
             'respondent_form': respondent_form,
             'is_respondent_step': True,
             'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
+            'previous_section_url': None,  # No previous step
         }
     else:
         current_section_idx = int(request.GET.get('section', 0))
@@ -390,6 +391,14 @@ def survey_fill(request, survey_code):
             return redirect('surveys:list')
         
         current_section = sections[current_section_idx]
+
+        # Calculate previous section URL
+        previous_section_url = None
+        if current_section_idx > 0:
+            previous_section_url = f"{url}?section={current_section_idx - 1}"
+        else:
+            # The step before the first section is the respondent info step
+            previous_section_url = url
 
         # Lógica para copiar respuestas de preguntas anteriores
         initial_data = request.session.get('survey_answers', {}).get(str(current_section.pk), {})
@@ -421,6 +430,7 @@ def survey_fill(request, survey_code):
             'total_sections': len(sections),
             'is_respondent_step': False,
             'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
+            'previous_section_url': previous_section_url,
         }
     
     return render(request, 'surveys/survey_fill_steps.html', context)
