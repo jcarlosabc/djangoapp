@@ -44,16 +44,21 @@ def _process_survey_excel(excel_file, status_callback):
                     status_callback('info', f"Encuesta '{survey.name}' creada.")
             survey = surveys_cache[survey_title]
 
-            if survey.id not in sections_cache:
-                section, created = Section.objects.get_or_create(
+            # --- Obtener o crear la Sección (Section) ---
+            section_title = row.get('section_title', 'Sección Principal').strip()
+            section_order = int(row.get('section_order', 1))
+            section_key = (survey.id, section_order)
+
+            if section_key not in sections_cache:
+                section, created = Section.objects.update_or_create(
                     survey=survey,
-                    order=1,
-                    defaults={'title': 'Sección Principal'}
+                    order=section_order,
+                    defaults={'title': section_title}
                 )
-                sections_cache[survey.id] = section
+                sections_cache[section_key] = section
                 if created:
-                    status_callback('info', f"Sección 'Sección Principal' creada para '{survey.name}'.")
-            section = sections_cache[survey.id]
+                    status_callback('info', f"Sección '{section.title}' (Orden: {section.order}) creada para '{survey.name}'.")
+            section = sections_cache[section_key]
 
             question_text = row['text'].strip()
             question_type = row['type'].strip().lower()
@@ -560,18 +565,961 @@ def survey_stats_view(request, survey_code):
 
 
 def get_question_dependency_data(request):
+
+
     question_id = request.GET.get('question_id')
+
+
     if not question_id:
+
+
         return JsonResponse({'error': 'No question_id provided'}, status=400)
+
+
     try:
+
+
         question = Question.objects.get(pk=question_id)
+
+
         data = {
+
+
             'qtype': question.qtype,
+
+
             'options': []
+
+
         }
+
+
         if question.qtype in [QuestionType.SINGLE, QuestionType.MULTI]:
+
+
             data['options'] = list(question.options.values('id', 'label'))
+
+
         
+
+
         return JsonResponse(data)
+
+
     except Question.DoesNotExist:
+
+
         return JsonResponse({'error': 'Question not found'}, status=404)
+
+
+
+
+
+
+
+
+import io
+
+
+from django.http import HttpResponse
+
+
+
+
+
+def download_excel_template(request):
+
+
+
+
+
+    # Define the desired column headers
+
+
+
+
+
+    columns = [
+
+
+
+
+
+        'survey_title',
+
+
+
+
+
+        'section_title',
+
+
+
+
+
+        'section_order',
+
+
+
+
+
+        'text',
+
+
+
+
+
+        'type',
+
+
+
+
+
+        'order',
+
+
+
+
+
+        'required',
+
+
+
+
+
+        'help_text',
+
+
+
+
+
+        'choices',
+
+
+
+
+
+        'depends_on_question',
+
+
+
+
+
+        'depends_on_option',
+
+
+
+
+
+        'depends_on_value_min',
+
+
+
+
+
+        'depends_on_value_max'
+
+
+
+
+
+    ]
+
+
+
+
+
+    
+
+
+
+
+
+    # Create an empty DataFrame with these columns
+
+
+
+
+
+    df = pd.DataFrame(columns=columns)
+
+
+
+
+
+    
+
+
+
+
+
+    # Use an in-memory buffer
+
+
+
+
+
+    buffer = io.BytesIO()
+
+
+
+
+
+    
+
+
+
+
+
+    # Write the DataFrame to the buffer in Excel format
+
+
+
+
+
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+
+
+
+
+
+        df.to_excel(writer, index=False, sheet_name='SurveyTemplate')
+
+
+
+
+
+    
+
+
+
+
+
+    # Set the buffer's position to the beginning
+
+
+
+
+
+    buffer.seek(0)
+
+
+
+
+
+    
+
+
+
+
+
+    # Create the HttpResponse
+
+
+
+
+
+    response = HttpResponse(
+
+
+
+
+
+        buffer.read(),
+
+
+
+
+
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+
+
+
+
+    )
+
+
+
+
+
+    
+
+
+
+
+
+    # Set the attachment header
+
+
+
+
+
+    response['Content-Disposition'] = 'attachment; filename="plantilla_encuesta.xlsx"'
+
+
+
+
+
+    
+
+
+
+
+
+    return response
+
+
+
+
+
+
+
+
+
+
+
+def download_example_template(request):
+
+
+
+
+
+    # Define the column headers
+
+
+
+
+
+    columns = [
+
+
+
+
+
+        'survey_title',
+
+
+
+
+
+        'section_title',
+
+
+
+
+
+        'section_order',
+
+
+
+
+
+        'text',
+
+
+
+
+
+        'type',
+
+
+
+
+
+        'order',
+
+
+
+
+
+        'required',
+
+
+
+
+
+        'help_text',
+
+
+
+
+
+        'choices',
+
+
+
+
+
+        'depends_on_question',
+
+
+
+
+
+        'depends_on_option',
+
+
+
+
+
+        'depends_on_value_min',
+
+
+
+
+
+        'depends_on_value_max'
+
+
+
+
+
+    ]
+
+
+
+
+
+
+
+
+
+
+
+    # Create example data
+
+
+
+
+
+    data = [
+
+
+
+
+
+        {
+
+
+
+
+
+            'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
+
+
+
+
+
+            'section_title': 'Información General',
+
+
+
+
+
+            'section_order': 1,
+
+
+
+
+
+            'text': '¿Cuál es tu departamento?',
+
+
+
+
+
+            'type': 'select',
+
+
+
+
+
+            'order': 1,
+
+
+
+
+
+            'required': 'TRUE',
+
+
+
+
+
+            'help_text': 'Selecciona el departamento al que perteneces.',
+
+
+
+
+
+            'choices': 'Ventas,Marketing,Tecnología,RRHH',
+
+
+
+
+
+        },
+
+
+
+
+
+        {
+
+
+
+
+
+            'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
+
+
+
+
+
+            'section_title': 'Información General',
+
+
+
+
+
+            'section_order': 1,
+
+
+
+
+
+            'text': 'Antigüedad en la empresa (en años)',
+
+
+
+
+
+            'type': 'number',
+
+
+
+
+
+            'order': 2,
+
+
+
+
+
+            'required': 'TRUE',
+
+
+
+
+
+        },
+
+
+
+
+
+        {
+
+
+
+
+
+            'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
+
+
+
+
+
+            'section_title': 'Satisfacción y Compromiso',
+
+
+
+
+
+            'section_order': 2,
+
+
+
+
+
+            'text': 'En una escala de 1 a 5, ¿qué tan satisfecho estás con tu trabajo?',
+
+
+
+
+
+            'type': 'radio',
+
+
+
+
+
+            'order': 3,
+
+
+
+
+
+            'required': 'TRUE',
+
+
+
+
+
+            'choices': '1,2,3,4,5',
+
+
+
+
+
+        },
+
+
+
+
+
+        {
+
+
+
+
+
+            'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
+
+
+
+
+
+            'section_title': 'Satisfacción y Compromiso',
+
+
+
+
+
+            'section_order': 2,
+
+
+
+
+
+            'text': 'Si tu satisfacción es 1 o 2, ¿podrías darnos más detalles?',
+
+
+
+
+
+            'type': 'textarea',
+
+
+
+
+
+            'order': 4,
+
+
+
+
+
+            'required': 'FALSE',
+
+
+
+
+
+            'help_text': 'Esta pregunta solo aparecerá si tu respuesta anterior fue 1 o 2.',
+
+
+
+
+
+            'depends_on_question': 'En una escala de 1 a 5, ¿qué tan satisfecho estás con tu trabajo?',
+
+
+
+
+
+            'depends_on_value_max': 2,
+
+
+
+
+
+        },
+
+
+
+
+
+                {
+
+
+
+
+
+                    'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
+
+
+
+
+
+                    'section_title': 'Satisfacción y Compromiso',
+
+
+
+
+
+                    'section_order': 2,
+
+
+
+
+
+                    'text': '¿Recomendarías trabajar aquí a un amigo?',
+
+
+
+
+
+                    'type': 'radio',
+
+
+
+
+
+                    'order': 5,
+
+
+
+
+
+                    'required': 'TRUE',
+
+
+
+
+
+                    'choices': 'Sí,No',
+
+
+
+
+
+                },
+
+
+
+
+
+                {
+
+
+
+
+
+                    'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
+
+
+
+
+
+                    'section_title': 'Satisfacción y Compromiso',
+
+
+
+
+
+                    'section_order': 2,
+
+
+
+
+
+                    'text': 'Si respondiste que sí, ¿qué es lo que más te gusta de la empresa?',
+
+
+
+
+
+                    'type': 'text',
+
+
+
+
+
+                    'order': 6,
+
+
+
+
+
+                    'required': 'FALSE',
+
+
+
+
+
+                    'depends_on_question': '¿Recomendarías trabajar aquí a un amigo?',
+
+
+
+
+
+                    'depends_on_option': 'Sí',
+
+
+
+
+
+                }
+
+
+
+
+
+    ]
+
+
+
+
+
+
+
+
+
+
+
+    # Create a DataFrame from the data
+
+
+
+
+
+    df = pd.DataFrame(data, columns=columns)
+
+
+
+
+
+
+
+
+
+
+
+    # Use an in-memory buffer
+
+
+
+
+
+    buffer = io.BytesIO()
+
+
+
+
+
+
+
+
+
+
+
+    # Write the DataFrame to the buffer in Excel format
+
+
+
+
+
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+
+
+
+
+
+        df.to_excel(writer, index=False, sheet_name='SurveyExample')
+
+
+
+
+
+
+
+
+
+
+
+    # Set the buffer's position to the beginning
+
+
+
+
+
+    buffer.seek(0)
+
+
+
+
+
+
+
+
+
+
+
+    # Create the HttpResponse
+
+
+
+
+
+    response = HttpResponse(
+
+
+
+
+
+        buffer.read(),
+
+
+
+
+
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+
+
+
+
+    )
+
+
+
+
+
+
+
+
+
+
+
+    # Set the attachment header
+
+
+
+
+
+    response['Content-Disposition'] = 'attachment; filename="plantilla_ejemplo_encuesta.xlsx"'
+
+
+
+
+
+
+
+
+
+
+
+    return response
+

@@ -12,6 +12,8 @@ urlpatterns = [
     path("stats/<slug:survey_code>/", views.survey_stats_view, name="stats"),
     path("dashboard/", views.dashboard_view, name="dashboard"),
     path("upload/", views.survey_upload_view, name="survey_upload"),
+    path('download-template/', views.download_excel_template, name='download_excel_template'),
+    path('download-example-template/', views.download_example_template, name='download_example_template'),
     path("signup/", views.signup, name="signup"),
     path("login/", auth_views.LoginView.as_view(template_name="surveys/auth_login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
