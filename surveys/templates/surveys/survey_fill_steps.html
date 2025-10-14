@@ -179,6 +179,8 @@
 </form>
 </div>
 
+<script id="previous-answers" type="application/json">{{ previous_answers_json|safe|default:"{}" }}</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const acceptYesRadio = document.getElementById('acceptDataProtectionYes');
@@ -409,19 +411,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateDependentQuestions() {
         const allQuestions = document.querySelectorAll('.question-wrapper');
+
+        // 1. Load answers from previous steps
+        const previousAnswersElement = document.getElementById('previous-answers');
+        let previousAnswers = {};
+        if (previousAnswersElement && previousAnswersElement.textContent) {
+            try {
+                previousAnswers = JSON.parse(previousAnswersElement.textContent);
+            } catch (e) {
+                console.error("Error parsing previous answers JSON:", e);
+            }
+        }
+
+        // 2. Get answers from the current step's form
         const formData = new FormData(formContainer);
-        
-        const questionStates = {};
+        const currentQuestionStates = {};
         for (const [name, value] of formData.entries()) {
             const match = name.match(/question_(\d+)/);
             if (match) {
                 const qId = match[1];
-                if (!questionStates[qId]) {
-                    questionStates[qId] = [];
+                if (!currentQuestionStates[qId]) {
+                    currentQuestionStates[qId] = [];
                 }
-                questionStates[qId].push(value);
+                currentQuestionStates[qId].push(value);
             }
         }
+
+        // 3. Merge previous and current answers
+        const questionStates = { ...previousAnswers, ...currentQuestionStates };
 
         allQuestions.forEach(questionWrapper => {
             const dependsOnQuestion = questionWrapper.dataset.dependsOnQuestion;

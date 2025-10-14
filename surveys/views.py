@@ -490,6 +490,21 @@ def survey_fill(request, survey_code):
 
         AnswersForm = build_answers_form_for_section(current_section)
         answers_form = AnswersForm(initial=initial_data)
+        # --- New logic to pass all previous answers for dependency checks ---
+        import json
+        all_previous_answers = {}
+        for section_id, answers in request.session.get('survey_answers', {}).items():
+            for field_name, value in answers.items():
+                if field_name.startswith('question_'):
+                    parts = field_name.split('_')
+                    if len(parts) > 1 and parts[1].isdigit():
+                        question_id = parts[1]
+                        val_list = value if isinstance(value, list) else [value]
+                        # Ensure values are strings for consistency with JS FormData
+                        all_previous_answers[question_id] = [str(v) for v in val_list]
+        previous_answers_json = json.dumps(all_previous_answers)
+        # --- End of new logic ---
+
         context = {
             'survey': survey,
             'section': current_section,
@@ -499,6 +514,7 @@ def survey_fill(request, survey_code):
             'is_respondent_step': False,
             'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
             'previous_section_url': previous_section_url,
+            'previous_answers_json': previous_answers_json,
         }
     
     return render(request, 'surveys/survey_fill_steps.html', context)
