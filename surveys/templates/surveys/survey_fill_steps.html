@@ -38,6 +38,15 @@
 <div id="surveyContentWrapper" style="display: none;">
 
 <style>
+  form {
+      counter-reset: question-counter {{ questions_before|default:0 }};
+  }
+  .question-wrapper {
+      counter-increment: question-counter;
+  }
+  .question-wrapper .field > label::before {
+      content: counter(question-counter) ". ";
+  }
   .radio-options-inline > div, .checkbox-options-inline > div {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

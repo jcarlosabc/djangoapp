@@ -432,6 +432,9 @@ def survey_fill(request, survey_code):
                     return redirect(f"{url}?section={next_section_idx}")
             else:
                 # Re-render section step with errors
+                questions_before = 0
+                for i in range(current_section_idx):
+                    questions_before += sections[i].questions.count()
                 context = {
                     'survey': survey,
                     'section': current_section,
@@ -440,6 +443,7 @@ def survey_fill(request, survey_code):
                     'total_sections': len(sections),
                     'is_respondent_step': False,
                     'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
+                    'questions_before': questions_before,
                 }
                 return render(request, 'surveys/survey_fill_steps.html', context)
 
@@ -505,6 +509,10 @@ def survey_fill(request, survey_code):
         previous_answers_json = json.dumps(all_previous_answers)
         # --- End of new logic ---
 
+        questions_before = 0
+        for i in range(current_section_idx):
+            questions_before += sections[i].questions.count()
+
         context = {
             'survey': survey,
             'section': current_section,
@@ -515,6 +523,7 @@ def survey_fill(request, survey_code):
             'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
             'previous_section_url': previous_section_url,
             'previous_answers_json': previous_answers_json,
+            'questions_before': questions_before,
         }
     
     return render(request, 'surveys/survey_fill_steps.html', context)
