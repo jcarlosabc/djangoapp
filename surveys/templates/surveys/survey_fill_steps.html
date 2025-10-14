@@ -315,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             inputs.forEach(input => {
                 if (input.type === "hidden") return;
+                if (input.offsetParent === null) return; // Skip inputs that are not visible
                 if (!input.checkValidity() || (input.value || "").trim() === "") {
                     const label = field.closest('.field').querySelector("label")?.textContent?.replace("*","").trim() || "Este campo";
                     setFieldError(field, label + " es obligatorio o no es válido.");
