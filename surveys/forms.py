@@ -1,5 +1,5 @@
 from django import forms
-from .models import ResponseSet, Answer, DOCUMENT_TYPES, Question, QuestionType, Interviewer, SingleChoiceDisplayType
+from .models import ResponseSet, Answer, DOCUMENT_TYPES, Question, QuestionType, Interviewer, SingleChoiceDisplayType, Municipio, Ubicacion, Option
 from django.contrib.auth.models import User
 
 class SurveyUploadForm(forms.Form):
@@ -161,7 +161,7 @@ def build_answers_form_for_section(section):
                 )
         elif q.qtype == QuestionType.UBICACION:
             # For UBICACION, we create multiple fields. We will attach the question object to the main one.
-            fields[f"{field_name}_municipio"] = ModelChoiceField(
+            fields[f"{field_name}_municipio"] = forms.ModelChoiceField(
                 queryset=Municipio.objects.all(),
                 label="Municipio",
                 required=q.required,
@@ -214,11 +214,17 @@ def build_answers_form_for_section(section):
                     ubicacion_field_name = f"{field_name}_ubicacion"
 
                     if municipio_field_name in self.fields and ubicacion_field_name in self.fields:
-                        # If form is submitted, try to get municipio from data
+                        municipio_id = None
+                        # If form is bound (POST), get municipio from data
                         if self.is_bound and self.data.get(municipio_field_name):
+                            municipio_id = self.data.get(municipio_field_name)
+                        # If form is not bound but has initial data (GET), get municipio from initial
+                        elif not self.is_bound and self.initial.get(municipio_field_name):
+                            municipio_id = self.initial.get(municipio_field_name)
+
+                        if municipio_id:
                             try:
-                                municipio_id = int(self.data.get(municipio_field_name))
-                                ubicaciones = Ubicacion.objects.filter(municipio_id=municipio_id).order_by('nombre')
+                                ubicaciones = Ubicacion.objects.filter(municipio_id=int(municipio_id)).order_by('nombre')
                                 self.fields[ubicacion_field_name].choices = [(u.pk, u.nombre) for u in ubicaciones]
                             except (ValueError, TypeError):
                                 pass # Handle cases where municipio_id is not a valid integer

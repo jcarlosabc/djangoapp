@@ -154,8 +154,8 @@
 
   <div class="flex justify-between mt-8">
       <div>
-          {% if not is_respondent_step and current_section_idx > 0 %}
-              <a href="?section={{ current_section_idx|add:-1 }}" class="px-6 py-2 rounded-lg bg-gray-300 text-gray-800 font-semibold hover:bg-gray-400 transition-colors">Anterior</a>
+          {% if previous_section_url %}
+              <a href="{{ previous_section_url }}" class="px-6 py-2 rounded-lg bg-gray-300 text-gray-800 font-semibold hover:bg-gray-400 transition-colors">Anterior</a>
           {% endif %}
       </div>
       
