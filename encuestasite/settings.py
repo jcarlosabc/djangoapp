@@ -14,7 +14,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS =  config('ALLOWED_HOSTS', default='*').split(',')
-
+print(ALLOWED_HOSTS)
 
 # Application definition
 
@@ -89,13 +89,16 @@ else:
 AUTH_PASSWORD_VALIDATORS = []
 
 LANGUAGE_CODE = 'es-es'
-TIME_ZONE = 'UTC'
+#TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota' 
 USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = config('STATIC_ROOT', default=str(BASE_DIR / 'staticfiles')) 
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -107,4 +110,12 @@ LOGOUT_REDIRECT_URL = 'login'
 
 # Media files configuration
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+#MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = config('MEDIA_ROOT', default=str(BASE_DIR / 'media')) 
+
+
+
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default='False').lower() == 'true'
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default='False').lower() == 'true'
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default='False').lower() == 'true'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

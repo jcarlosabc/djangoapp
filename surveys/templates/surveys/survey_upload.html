@@ -43,9 +43,14 @@
   <div class="mt-8 p-4 bg-gray-50 rounded-lg">
     <div class="flex justify-between items-center mb-2">
       <h3 class="font-semibold text-lg">Estructura del Archivo Excel</h3>
-      <a href="{% static 'surveys/templates/plantilla_encuesta_avanzada.xlsx' %}" download class="px-3 py-1 rounded bg-gray-200 text-gray-800 text-sm font-medium hover:bg-gray-300">
-        Descargar Plantilla
-      </a>
+      <div class="flex items-center space-x-2">
+        <a href="{% url 'surveys:download_excel_template' %}" download class="px-3 py-1 rounded bg-gray-200 text-gray-800 text-sm font-medium hover:bg-gray-300">
+          Descargar Plantilla Vacía
+        </a>
+        <a href="{% url 'surveys:download_example_template' %}" download class="px-3 py-1 rounded bg-green-200 text-green-800 text-sm font-medium hover:bg-green-300">
+          Descargar Plantilla con Ejemplo
+        </a>
+      </div>
     </div>
     <p class="text-sm text-gray-700 mb-3">
       El archivo debe ser un `.xlsx` y contener las siguientes columnas obligatorias:
@@ -60,6 +65,8 @@
       Columnas opcionales:
     </p>
     <ul class="list-disc list-inside text-sm space-y-1">
+      <li><strong>section_title:</strong> El nombre de la sección a la que pertenece la pregunta.</li>
+      <li><strong>section_order:</strong> El número de orden de la sección.</li>
       <li><strong>required:</strong> <code>TRUE</code> o <code>FALSE</code> para indicar si la pregunta es obligatoria.</li>
       <li><strong>help_text:</strong> Un texto de ayuda para la pregunta.</li>
       <li><strong>choices:</strong> Para tipos <code>radio</code>, <code>select</code>, o <code>multi</code>, una lista de opciones separadas por comas (ej: Opción 1, Opción 2, Opción 3).</li>

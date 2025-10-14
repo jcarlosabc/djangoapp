@@ -48,17 +48,20 @@ class Command(BaseCommand):
                 survey = surveys_cache[survey_title]
 
                 # --- Obtener o crear la Sección (Section) ---
-                # Por simplicidad, creamos una única sección por encuesta.
-                if survey.id not in sections_cache:
-                    section, created = Section.objects.get_or_create(
+                section_title = row.get('section_title', 'Sección Principal').strip()
+                section_order = int(row.get('section_order', 1))
+                section_key = (survey.id, section_order)
+
+                if section_key not in sections_cache:
+                    section, created = Section.objects.update_or_create(
                         survey=survey,
-                        order=1,
-                        defaults={'title': 'Sección Principal'}
+                        order=section_order,
+                        defaults={'title': section_title}
                     )
-                    sections_cache[survey.id] = section
+                    sections_cache[section_key] = section
                     if created:
-                        self.stdout.write(f"Sección 'Sección Principal' creada para la encuesta '{survey.name}'.")
-                section = sections_cache[survey.id]
+                        self.stdout.write(f"Sección '{section.title}' (Orden: {section.order}) creada para la encuesta '{survey.name}'.")
+                section = sections_cache[section_key]
 
                 # --- Crear la Pregunta (Question) ---
                 question_text = row['text'].strip()
