@@ -299,7 +299,30 @@ def survey_fill(request, survey_code):
             answers_form = AnswersForm(request.POST)
 
             if answers_form.is_valid():
-                request.session['survey_answers'][str(current_section.pk)] = cleaned_data_to_json(answers_form.cleaned_data)
+                cleaned_data = answers_form.cleaned_data
+                # Manually add the 'other' text to the cleaned_data before session serialization
+                for question in current_section.questions.all():
+                    trigger_option = question.options.filter(is_other_trigger=True).first()
+                    if not trigger_option:
+                        continue
+
+                    field_name = f"question_{question.pk}"
+                    selected_value = cleaned_data.get(field_name)
+
+                    if not selected_value:
+                        continue
+
+                    if not isinstance(selected_value, list):
+                        selected_value = [selected_value]
+
+                    trigger_pk_code = f"{trigger_option.pk}__{trigger_option.code}"
+                    if trigger_pk_code in selected_value:
+                        other_text_field_name = f"question_{question.pk}_other_text"
+                        other_text = answers_form.data.get(other_text_field_name, '').strip()
+                        if other_text:
+                            cleaned_data[other_text_field_name] = other_text
+
+                request.session['survey_answers'][str(current_section.pk)] = cleaned_data_to_json(cleaned_data)
                 request.session.modified = True
 
                 if current_section_idx == len(sections) - 1:
@@ -330,12 +353,20 @@ def survey_fill(request, survey_code):
                                     field_name = f"question_{question.pk}_ubicacion"
                                 
                                 answer_value = section_answers.get(field_name)
+                                other_text = section_answers.get(f"question_{question.pk}_other_text")
+
+                                # Determine the value for text_answer
+                                final_text_answer = ''
+                                if other_text:
+                                    final_text_answer = other_text
+                                elif question.qtype == 'text':
+                                    final_text_answer = answer_value
                                 
                                 answer, _ = Answer.objects.update_or_create(
                                     response=response_set,
                                     question=question,
                                     defaults={
-                                        'text_answer': answer_value if question.qtype == 'text' else '',
+                                        'text_answer': final_text_answer,
                                         'integer_answer': answer_value if question.qtype == 'int' else None,
                                         'decimal_answer': answer_value if question.qtype == 'dec' else None,
                                         'bool_answer': answer_value if question.qtype == 'bool' else None,
@@ -346,7 +377,9 @@ def survey_fill(request, survey_code):
                                     if answer_value:
                                         if not isinstance(answer_value, list):
                                             answer_value = [answer_value]
-                                        answer.options.set(answer_value)
+                                        
+                                        pks = [val.split('__')[0] for val in answer_value if '__' in val]
+                                        answer.options.set(pks)
                                     else:
                                         answer.options.clear()
                                 elif question.qtype == 'ubicacion':

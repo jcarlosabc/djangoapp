@@ -6,6 +6,7 @@ from .forms import QuestionAdminForm
 class OptionInline(admin.TabularInline):
     model = Option
     extra = 1
+    fields = ('code', 'label', 'order', 'numeric_value', 'is_other_trigger')
 
 class QuestionInline(admin.TabularInline):
     model = Question
@@ -41,6 +42,11 @@ class QuestionAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('section', 'code', 'text', 'help_text', 'qtype', 'single_choice_display', 'required', 'order', 'max_choices', 'ubicaciones', 'min_value', 'max_value')
+        }),
+        ("Campo 'Otro' Condicional", {
+            'classes': ('collapse',),
+            'fields': ('other_text_label',),
+            'description': "Configura la etiqueta para el campo de texto que aparece cuando se selecciona una opción marcada como 'Otro'."
         }),
         ('Dependencia', {
             'fields': ('depends_on', 'depends_on_option', 'depends_on_value_min', 'depends_on_value_max'),

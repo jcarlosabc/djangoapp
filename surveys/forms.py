@@ -120,6 +120,9 @@ def build_answers_form_for_section(section):
             'required': q.required,
         }
 
+        trigger_option = q.options.filter(is_other_trigger=True).first()
+        trigger_code = trigger_option.code if trigger_option else None
+
         if q.qtype == QuestionType.TEXT:
             field = forms.CharField(
                 **field_kwargs,
@@ -143,7 +146,11 @@ def build_answers_form_for_section(section):
         elif q.qtype == QuestionType.DATE:
             field = forms.DateField(**field_kwargs, widget=forms.DateInput(attrs={'type': 'date'}))
         elif q.qtype in [QuestionType.SINGLE, QuestionType.MULTI, QuestionType.LIKERT]:
-            choices = [(option.pk, option.label) for option in q.options.all()]
+            choices = [(f"{option.pk}__{option.code}", option.label) for option in q.options.all()]
+            # Find trigger code for the data attribute
+            trigger_option = q.options.filter(is_other_trigger=True).first()
+            trigger_code = trigger_option.code if trigger_option else None
+
             if q.qtype == QuestionType.SINGLE or q.qtype == QuestionType.LIKERT:
                 widget = forms.RadioSelect
                 if q.qtype == QuestionType.SINGLE and q.single_choice_display == SingleChoiceDisplayType.SELECT:
@@ -190,6 +197,7 @@ def build_answers_form_for_section(section):
             continue # Skip unknown question types
 
         field.question = q
+        field.trigger_code = trigger_code
         fields[field_name] = field
 
     class DynamicAnswersForm(forms.Form):
