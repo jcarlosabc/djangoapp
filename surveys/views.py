@@ -88,8 +88,12 @@ def _process_survey_excel(excel_file, status_callback):
             }
             if display_type:
                 question_defaults['single_choice_display'] = display_type
-            if 'other_text_label' in row and pd.notna(row['other_text_label']):
-                question_defaults['other_text_label'] = str(row['other_text_label'])
+            
+            # Ensure 'other_text_label' always has a value to prevent DB errors
+            default_label = Question._meta.get_field('other_text_label').get_default()
+            excel_label = row.get('other_text_label')
+            # Use label from Excel if it's not null/NaN, otherwise use the model's default
+            question_defaults['other_text_label'] = str(excel_label) if pd.notna(excel_label) else default_label
 
             question, created = Question.objects.update_or_create(
                 section=section,
