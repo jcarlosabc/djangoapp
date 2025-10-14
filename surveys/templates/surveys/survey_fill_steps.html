@@ -482,22 +482,34 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!triggerCode || !otherTextWrapper) return;
 
             const questionId = wrapper.dataset.questionId;
-            const inputs = wrapper.querySelectorAll(`input[name="question_${questionId}"]`);
+            const fieldElements = wrapper.querySelectorAll(
+                `input[name="question_${questionId}"], select[name="question_${questionId}"]`
+            );
 
             function checkOther() {
                 let triggerSelected = false;
-                const triggerInput = Array.from(inputs).find(input => {
-                    const value = input.value;
-                    if (value.includes('__')) {
-                        const code = value.split('__')[1];
-                        return code === triggerCode;
-                    }
-                    return false;
-                });
 
-                if (triggerInput && triggerInput.checked) {
-                    triggerSelected = true;
-                }
+                fieldElements.forEach(element => {
+                    if (element.tagName === 'SELECT') {
+                        const selectedValue = element.value;
+                        if (selectedValue.includes('__')) {
+                            const code = selectedValue.split('__')[1];
+                            if (code === triggerCode) {
+                                triggerSelected = true;
+                            }
+                        }
+                    } else if (element.type === 'radio' || element.type === 'checkbox') {
+                        if (element.checked) {
+                            const value = element.value;
+                            if (value.includes('__')) {
+                                const code = value.split('__')[1];
+                                if (code === triggerCode) {
+                                    triggerSelected = true;
+                                }
+                            }
+                        }
+                    }
+                });
 
                 if (triggerSelected) {
                     otherTextWrapper.style.display = 'block';
@@ -507,8 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            inputs.forEach(input => {
-                input.addEventListener('change', checkOther);
+            fieldElements.forEach(element => {
+                element.addEventListener('change', checkOther);
             });
 
             // Initial check
