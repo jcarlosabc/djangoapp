@@ -126,7 +126,7 @@
              data-depends-on-value-min="{{ field.field.question.depends_on_value_min|default_if_none:'' }}"
              data-depends-on-value-max="{{ field.field.question.depends_on_value_max|default_if_none:'' }}"
              style="display: none;"
-             {% endif %}
+            {% endif %}
              {% if field.field.trigger_code %}
              data-other-trigger="{{ field.field.trigger_code }}"
              {% endif %}>
@@ -135,7 +135,7 @@
               <div class="{% if field.field.widget.input_type == 'radio' %}radio-options-inline{% endif %}">
                 {{ field }}
               </div>
-              {% if field.field.trigger_code %}
+               {% if field.field.trigger_code %}
               <div class="other-text-wrapper mt-3" style="display: none;">
                   <label class="block text-sm font-medium text-gray-700 mb-1" for="question_{{ field.field.question.pk }}_other_text">{{ field.field.question.other_text_label }}</label>
                   <input type="text" name="question_{{ field.field.question.pk }}_other_text" id="question_{{ field.field.question.pk }}_other_text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Check for option-based dependency
             if (dependsOnOption) {
-                if (parentState && parentState.includes(dependsOnOption)) {
+                if (parentState && parentState.some(value => value.startsWith(dependsOnOption + '__') || value === dependsOnOption)) {
                     isMet = true;
                 }
             }
@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial check on page load
     updateDependentQuestions();
 
-    // --- "Other" option logic ---
+        // --- "Other" option logic ---
     function handleOtherOption() {
         document.querySelectorAll('.question-wrapper[data-other-trigger]').forEach(wrapper => {
             const triggerCode = wrapper.dataset.otherTrigger;
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
     handleOtherOption();
 
     // Add event listener to the form
-    if (formContainer) {
+     if (formContainer) {
         formContainer.addEventListener('change', () => {
             updateDependentQuestions();
             handleOtherOption();
