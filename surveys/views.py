@@ -88,6 +88,8 @@ def _process_survey_excel(excel_file, status_callback):
             }
             if display_type:
                 question_defaults['single_choice_display'] = display_type
+            if 'other_text_label' in row and pd.notna(row['other_text_label']):
+                question_defaults['other_text_label'] = str(row['other_text_label'])
 
             question, created = Question.objects.update_or_create(
                 section=section,
@@ -120,8 +122,32 @@ def _process_survey_excel(excel_file, status_callback):
             status_callback('error', f"Error procesando la fila {index + 2}: {e}")
             continue
 
-    status_callback('info', "\nResolviendo dependencias entre preguntas...")
+    status_callback('info', "\nResolviendo dependencias y configuraciones avanzadas...")
     for index, row in df.iterrows():
+        if not pd.notna(row.get('text')):
+            continue
+        question_text = row['text'].strip()
+        question = questions_cache.get(question_text)
+
+        if not question:
+            continue
+
+        # Handle 'other_trigger_choice' configuration
+        if 'other_trigger_choice' in row and pd.notna(row['other_trigger_choice']):
+            trigger_choice_label = str(row['other_trigger_choice']).strip()
+            try:
+                # First, ensure no other option is already a trigger
+                question.options.update(is_other_trigger=False)
+                # Then, set the new trigger
+                option_to_update = question.options.get(label=trigger_choice_label)
+                option_to_update.is_other_trigger = True
+                option_to_update.save()
+                status_callback('info', f"  - Opción 'Otro' configurada para '{question.text}' en la opción '{trigger_choice_label}'.")
+            except Option.DoesNotExist:
+                status_callback('warning', f"ADVERTENCIA: Para '{question.text}', no se encontró la opción '{trigger_choice_label}' para configurar como 'Otro'.")
+            except Option.MultipleObjectsReturned:
+                status_callback('warning', f"ADVERTENCIA: Para '{question.text}', múltiples opciones tienen la etiqueta '{trigger_choice_label}'. No se pudo configurar 'Otro'.")
+
         if pd.notna(row.get('depends_on_question')):
             dependent_question_text = row['text'].strip()
             parent_question_text = row['depends_on_question'].strip()
