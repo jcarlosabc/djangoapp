@@ -116,6 +116,20 @@ class Question(models.Model):
 
     min_value = models.IntegerField(null=True, blank=True, help_text="Valor mínimo para preguntas de tipo entero.")
     max_value = models.IntegerField(null=True, blank=True, help_text="Valor máximo para preguntas de tipo entero.")
+    other_text_label = models.CharField(
+        max_length=100,
+        blank=True,
+        default="Especifique",
+        help_text="Etiqueta para el campo de texto 'otro'."
+    )
+
+    def clean(self):
+        super().clean()
+        # Ensure that only one option can be marked as 'other_trigger'
+        if self.pk and self.options.filter(is_other_trigger=True).count() > 1:
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Solo una opción por pregunta puede ser marcada como la opción 'Otro'.")
+
 
     class Meta:
         unique_together = ("section", "code")
@@ -135,6 +149,14 @@ class Option(models.Model):
     order = models.PositiveIntegerField(default=1)
     numeric_value = models.IntegerField(null=True, blank=True,
                                         validators=[MinValueValidator(0), MaxValueValidator(10)])
+    is_other_trigger = models.BooleanField("Es la opción 'Otro'", default=False, help_text="Si se marca, esta opción mostrará un campo de texto adicional.")
+
+    def clean(self):
+        super().clean()
+        if self.is_other_trigger and self.question.qtype not in [QuestionType.SINGLE, QuestionType.MULTI]:
+            from django.core.exceptions import ValidationError
+            raise ValidationError("La opción 'Otro' solo es aplicable a preguntas de opción única o múltiple.")
+
     class Meta:
         unique_together = ("question", "code")
         ordering = ["order"]
