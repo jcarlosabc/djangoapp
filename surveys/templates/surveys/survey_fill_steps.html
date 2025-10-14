@@ -426,13 +426,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Check for option-based dependency
             if (dependsOnOption) {
-                if (parentState && parentState.includes(dependsOnOption)) {
+                if (Array.isArray(parentState) && parentState.includes(dependsOnOption)) {
                     isMet = true;
                 }
             }
             // Check for value-based dependency
             else if (dependsOnMin || dependsOnMax) {
-                if (parentState && parentState.length > 0) {
+                if (Array.isArray(parentState) && parentState.length > 0) {
                     const parentValue = parseFloat(parentState[0]);
                     if (!isNaN(parentValue)) {
                         const min = dependsOnMin ? parseFloat(dependsOnMin) : null;
