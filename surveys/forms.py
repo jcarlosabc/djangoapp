@@ -152,9 +152,14 @@ def build_answers_form_for_section(section):
             trigger_code = trigger_option.code if trigger_option else None
 
             if q.qtype == QuestionType.SINGLE or q.qtype == QuestionType.LIKERT:
-                widget = forms.RadioSelect
                 if q.qtype == QuestionType.SINGLE and q.single_choice_display == SingleChoiceDisplayType.SELECT:
+                    # For Select widgets, add an empty choice at the beginning
+                    choices.insert(0, ('', 'Seleccione una respuesta'))
                     widget = forms.Select
+                else:
+                    # For Radio widgets
+                    widget = forms.RadioSelect
+
                 field = forms.ChoiceField(
                     **field_kwargs,
                     choices=choices,
