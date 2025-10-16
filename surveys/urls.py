@@ -10,6 +10,7 @@ urlpatterns = [
     path("s/<slug:survey_code>/", views.survey_fill, name="fill"), # Changed 'code' to 'survey_code'
     path("s/<slug:survey_code>/check-respondent/", views.check_duplicate_respondent, name="check_respondent"), # Changed 'code' to 'survey_code'
     path("stats/<slug:survey_code>/", views.survey_stats_view, name="stats"),
+    path("stats/<slug:survey_code>/export/excel/", views.export_survey_responses_excel, name="export_excel"),
     path("dashboard/", views.dashboard_view, name="dashboard"),
     path("upload/", views.survey_upload_view, name="survey_upload"),
     path('download-template/', views.download_excel_template, name='download_excel_template'),

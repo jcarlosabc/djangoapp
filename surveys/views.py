@@ -1,4 +1,4 @@
-﻿from django.conf import settings # Added
+from django.conf import settings # Added
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -212,7 +212,6 @@ def survey_upload_view(request):
         form = SurveyUploadForm()
 
     return render(request, 'surveys/survey_upload.html', {'form': form})
-
 
 def signup(request):
     if request.method == 'POST':
@@ -715,7 +714,6 @@ def get_question_dependency_data(request):
 
 
 
-
 import io
 
 
@@ -723,10 +721,7 @@ from django.http import HttpResponse
 
 
 
-
-
 def download_excel_template(request):
-
 
 
 
@@ -736,9 +731,7 @@ def download_excel_template(request):
 
 
 
-
     columns = [
-
 
 
 
@@ -748,9 +741,7 @@ def download_excel_template(request):
 
 
 
-
         'section_title',
-
 
 
 
@@ -760,9 +751,7 @@ def download_excel_template(request):
 
 
 
-
         'text',
-
 
 
 
@@ -772,9 +761,7 @@ def download_excel_template(request):
 
 
 
-
         'order',
-
 
 
 
@@ -784,9 +771,7 @@ def download_excel_template(request):
 
 
 
-
         'help_text',
-
 
 
 
@@ -796,9 +781,7 @@ def download_excel_template(request):
 
 
 
-
         'depends_on_question',
-
 
 
 
@@ -808,9 +791,7 @@ def download_excel_template(request):
 
 
 
-
         'depends_on_value_min',
-
 
 
 
@@ -820,15 +801,12 @@ def download_excel_template(request):
 
 
 
-
     ]
 
 
 
 
-
     
-
 
 
 
@@ -838,15 +816,12 @@ def download_excel_template(request):
 
 
 
-
     df = pd.DataFrame(columns=columns)
 
 
 
 
-
     
-
 
 
 
@@ -856,15 +831,12 @@ def download_excel_template(request):
 
 
 
-
     buffer = io.BytesIO()
 
 
 
 
-
     
-
 
 
 
@@ -874,9 +846,7 @@ def download_excel_template(request):
 
 
 
-
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-
 
 
 
@@ -886,9 +856,7 @@ def download_excel_template(request):
 
 
 
-
     
-
 
 
 
@@ -898,15 +866,12 @@ def download_excel_template(request):
 
 
 
-
     buffer.seek(0)
 
 
 
 
-
     
-
 
 
 
@@ -916,9 +881,7 @@ def download_excel_template(request):
 
 
 
-
     response = HttpResponse(
-
 
 
 
@@ -928,9 +891,7 @@ def download_excel_template(request):
 
 
 
-
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-
 
 
 
@@ -940,9 +901,7 @@ def download_excel_template(request):
 
 
 
-
     
-
 
 
 
@@ -952,15 +911,12 @@ def download_excel_template(request):
 
 
 
-
     response['Content-Disposition'] = 'attachment; filename="plantilla_encuesta.xlsx"'
 
 
 
 
-
     
-
 
 
 
@@ -971,14 +927,7 @@ def download_excel_template(request):
 
 
 
-
-
-
-
-
-
 def download_example_template(request):
-
 
 
 
@@ -988,9 +937,7 @@ def download_example_template(request):
 
 
 
-
     columns = [
-
 
 
 
@@ -1000,9 +947,7 @@ def download_example_template(request):
 
 
 
-
         'section_title',
-
 
 
 
@@ -1012,9 +957,7 @@ def download_example_template(request):
 
 
 
-
         'text',
-
 
 
 
@@ -1024,9 +967,7 @@ def download_example_template(request):
 
 
 
-
         'order',
-
 
 
 
@@ -1036,9 +977,7 @@ def download_example_template(request):
 
 
 
-
         'help_text',
-
 
 
 
@@ -1048,9 +987,7 @@ def download_example_template(request):
 
 
 
-
         'depends_on_question',
-
 
 
 
@@ -1060,9 +997,7 @@ def download_example_template(request):
 
 
 
-
         'depends_on_value_min',
-
 
 
 
@@ -1072,12 +1007,7 @@ def download_example_template(request):
 
 
 
-
     ]
-
-
-
-
 
 
 
@@ -1090,9 +1020,7 @@ def download_example_template(request):
 
 
 
-
     data = [
-
 
 
 
@@ -1102,9 +1030,7 @@ def download_example_template(request):
 
 
 
-
             'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
-
 
 
 
@@ -1114,9 +1040,7 @@ def download_example_template(request):
 
 
 
-
             'section_order': 1,
-
 
 
 
@@ -1126,9 +1050,7 @@ def download_example_template(request):
 
 
 
-
             'type': 'select',
-
 
 
 
@@ -1138,9 +1060,7 @@ def download_example_template(request):
 
 
 
-
             'required': 'TRUE',
-
 
 
 
@@ -1150,9 +1070,7 @@ def download_example_template(request):
 
 
 
-
             'choices': 'Ventas,Marketing,Tecnología,RRHH',
-
 
 
 
@@ -1162,15 +1080,12 @@ def download_example_template(request):
 
 
 
-
         {
 
 
 
 
-
             'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
-
 
 
 
@@ -1180,9 +1095,7 @@ def download_example_template(request):
 
 
 
-
             'section_order': 1,
-
 
 
 
@@ -1192,9 +1105,7 @@ def download_example_template(request):
 
 
 
-
             'type': 'number',
-
 
 
 
@@ -1204,9 +1115,7 @@ def download_example_template(request):
 
 
 
-
             'required': 'TRUE',
-
 
 
 
@@ -1216,9 +1125,7 @@ def download_example_template(request):
 
 
 
-
         {
-
 
 
 
@@ -1228,15 +1135,12 @@ def download_example_template(request):
 
 
 
-
             'section_title': 'Satisfacción y Compromiso',
 
 
 
 
-
             'section_order': 2,
-
 
 
 
@@ -1246,9 +1150,7 @@ def download_example_template(request):
 
 
 
-
             'type': 'radio',
-
 
 
 
@@ -1258,9 +1160,7 @@ def download_example_template(request):
 
 
 
-
             'required': 'TRUE',
-
 
 
 
@@ -1270,9 +1170,7 @@ def download_example_template(request):
 
 
 
-
         },
-
 
 
 
@@ -1282,9 +1180,7 @@ def download_example_template(request):
 
 
 
-
             'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
-
 
 
 
@@ -1294,9 +1190,7 @@ def download_example_template(request):
 
 
 
-
             'section_order': 2,
-
 
 
 
@@ -1306,9 +1200,7 @@ def download_example_template(request):
 
 
 
-
             'type': 'textarea',
-
 
 
 
@@ -1318,9 +1210,7 @@ def download_example_template(request):
 
 
 
-
             'required': 'FALSE',
-
 
 
 
@@ -1330,9 +1220,7 @@ def download_example_template(request):
 
 
 
-
             'depends_on_question': 'En una escala de 1 a 5, ¿qué tan satisfecho estás con tu trabajo?',
-
 
 
 
@@ -1342,9 +1230,7 @@ def download_example_template(request):
 
 
 
-
         },
-
 
 
 
@@ -1354,9 +1240,7 @@ def download_example_template(request):
 
 
 
-
                     'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
-
 
 
 
@@ -1366,9 +1250,7 @@ def download_example_template(request):
 
 
 
-
                     'section_order': 2,
-
 
 
 
@@ -1378,9 +1260,7 @@ def download_example_template(request):
 
 
 
-
                     'type': 'radio',
-
 
 
 
@@ -1390,9 +1270,7 @@ def download_example_template(request):
 
 
 
-
                     'required': 'TRUE',
-
 
 
 
@@ -1402,9 +1280,7 @@ def download_example_template(request):
 
 
 
-
                 },
-
 
 
 
@@ -1414,9 +1290,7 @@ def download_example_template(request):
 
 
 
-
                     'survey_title': 'Encuesta de Satisfacción (Ejemplo)',
-
 
 
 
@@ -1426,9 +1300,7 @@ def download_example_template(request):
 
 
 
-
                     'section_order': 2,
-
 
 
 
@@ -1438,9 +1310,7 @@ def download_example_template(request):
 
 
 
-
                     'type': 'text',
-
 
 
 
@@ -1450,9 +1320,7 @@ def download_example_template(request):
 
 
 
-
                     'required': 'FALSE',
-
 
 
 
@@ -1462,9 +1330,7 @@ def download_example_template(request):
 
 
 
-
                     'depends_on_option': 'Sí',
-
 
 
 
@@ -1474,21 +1340,12 @@ def download_example_template(request):
 
 
 
-
     ]
 
 
 
 
-
-
-
-
-
-
-
     # Create a DataFrame from the data
-
 
 
 
@@ -1501,12 +1358,7 @@ def download_example_template(request):
 
 
 
-
-
-
-
     # Use an in-memory buffer
-
 
 
 
@@ -1519,18 +1371,12 @@ def download_example_template(request):
 
 
 
-
-
-
-
     # Write the DataFrame to the buffer in Excel format
 
 
 
 
-
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-
 
 
 
@@ -1543,12 +1389,7 @@ def download_example_template(request):
 
 
 
-
-
-
-
     # Set the buffer's position to the beginning
-
 
 
 
@@ -1561,12 +1402,7 @@ def download_example_template(request):
 
 
 
-
-
-
-
     # Create the HttpResponse
-
 
 
 
@@ -1576,15 +1412,12 @@ def download_example_template(request):
 
 
 
-
         buffer.read(),
 
 
 
 
-
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-
 
 
 
@@ -1597,12 +1430,7 @@ def download_example_template(request):
 
 
 
-
-
-
-
     # Set the attachment header
-
 
 
 
@@ -1615,9 +1443,103 @@ def download_example_template(request):
 
 
 
-
-
-
-
     return response
 
+
+
+
+@login_required
+def export_survey_responses_excel(request, survey_code):
+    survey = get_object_or_404(Survey, code=survey_code)
+    
+    # Obtener todas las respuestas para esta encuesta
+    response_sets = ResponseSet.objects.filter(survey=survey).prefetch_related(
+        'answers', 
+        'answers__question', 
+        'answers__options',
+        'answers__selected_ubicaciones'
+    ).order_by('created_at')
+
+    # Obtener todas las preguntas de la encuesta en orden
+    questions = Question.objects.filter(section__survey=survey).order_by('section__order', 'order')
+
+    # Definir las columnas básicas del encuestado
+    base_columns = [
+        'ID de Respuesta', 'Fecha de Creación', 'Tipo de Documento', 
+        'Número de Identificación', 'Nombre Completo', 'Email', 'Teléfono',
+        'Encuestador'
+    ]
+    
+    # Crear un mapeo de ID de pregunta a su texto para usar como cabecera
+    question_headers = {q.id: f"{q.code} - {q.text}" for q in questions}
+    
+    # Combinar columnas
+    all_columns = base_columns + [question_headers[q.id] for q in questions]
+    
+    # Preparar los datos para el DataFrame
+    data_rows = []
+    for r_set in response_sets:
+        row = {
+            'ID de Respuesta': r_set.pk,
+            'Fecha de Creación': r_set.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'Tipo de Documento': r_set.get_document_type_display(),
+            'Número de Identificación': r_set.identificacion,
+            'Nombre Completo': r_set.full_name,
+            'Email': r_set.email,
+            'Teléfono': r_set.phone,
+            'Encuestador': r_set.interviewer.full_name if r_set.interviewer else 'N/A',
+        }
+        
+        # Crear un diccionario de respuestas para este conjunto para un acceso rápido
+        answers_map = {a.question.id: a for a in r_set.answers.all()}
+        
+        for q in questions:
+            header = question_headers[q.id]
+            answer = answers_map.get(q.id)
+            
+            if not answer:
+                row[header] = '' # Dejar en blanco si no hay respuesta
+                continue
+
+            # Formatear la respuesta según el tipo de pregunta
+            if q.qtype in [QuestionType.SINGLE, QuestionType.MULTI, QuestionType.LIKERT]:
+                # Unir las etiquetas de las opciones seleccionadas
+                row[header] = ', '.join(opt.label for opt in answer.options.all())
+                # Si hay una respuesta de "otro", añadirla
+                if answer.text_answer:
+                    row[header] += f" (Otro: {answer.text_answer})"
+            elif q.qtype == QuestionType.TEXT:
+                row[header] = answer.text_answer
+            elif q.qtype == QuestionType.INTEGER:
+                row[header] = answer.integer_answer
+            elif q.qtype == QuestionType.DECIMAL:
+                row[header] = answer.decimal_answer
+            elif q.qtype == QuestionType.BOOL:
+                row[header] = 'Sí' if answer.bool_answer else 'No' if answer.bool_answer is not None else ''
+            elif q.qtype == QuestionType.DATE:
+                row[header] = answer.date_answer.strftime('%Y-%m-%d') if answer.date_answer else ''
+            elif q.qtype == QuestionType.UBICACION:
+                row[header] = ', '.join(u.nombre for u in answer.selected_ubicaciones.all())
+            else:
+                row[header] = answer.text_answer # Fallback para otros tipos
+
+        data_rows.append(row)
+
+    # Crear el DataFrame
+    df = pd.DataFrame(data_rows, columns=all_columns)
+
+    # Crear el archivo Excel en memoria
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Respuestas')
+
+    buffer.seek(0)
+
+    # Crear la respuesta HTTP
+    response = HttpResponse(
+        buffer.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="respuestas_{survey.code}.xlsx"'
+
+    return response
