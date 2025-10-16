@@ -4,6 +4,7 @@
 {% block content %}
 <div class="flex justify-between items-center mb-4">
   <h1 class="text-xl font-semibold">Encuestas disponibles</h1>
+  {% if user.is_staff %}
   <div class="flex space-x-2">
     <a href="{% url 'surveys:dashboard' %}" class="px-4 py-2 rounded bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700">
       Panel de Control
@@ -12,6 +13,7 @@
       Cargar desde Excel
     </a>
   </div>
+  {% endif %}
 </div>
 <div class="grid sm:grid-cols-2 gap-4">
   {% for s in surveys %}
@@ -22,7 +24,9 @@
       </div>
       <div class="mt-4 flex space-x-2">
         <a href="{% url 'surveys:fill' s.code %}" class="px-3 py-2 rounded bg-blue-600 text-white text-sm">Responder</a>
+        {% if user.is_staff %}
         <a href="{% url 'surveys:stats' s.code %}" class="px-3 py-2 rounded bg-gray-200 text-gray-800 text-sm">Estadísticas</a>
+        {% endif %}
       </div>
     </div>
   {% empty %}

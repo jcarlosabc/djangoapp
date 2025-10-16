@@ -197,6 +197,9 @@ def _process_survey_excel(excel_file, status_callback):
 
 @login_required
 def survey_upload_view(request):
+    if not request.user.is_staff:
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('surveys:list')
     if request.method == 'POST':
         form = SurveyUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -541,6 +544,9 @@ from django.db.models import Count, Avg, Min, Max
 
 @login_required
 def dashboard_view(request):
+    if not request.user.is_staff:
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('surveys:list')
     total_surveys = Survey.objects.count()
     total_responses = ResponseSet.objects.count()
     total_interviewers = Interviewer.objects.count()
@@ -600,6 +606,9 @@ def dashboard_view(request):
 
 @login_required
 def survey_stats_view(request, survey_code):
+    if not request.user.is_staff:
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('surveys:list')
     survey = get_object_or_404(Survey, code=survey_code)
     response_count = ResponseSet.objects.filter(survey=survey).count()
     
