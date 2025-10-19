@@ -294,8 +294,9 @@ def survey_fill(request, survey_code):
 
     is_respondent_step = 'section' not in request.GET
 
-    # If this is a GET request for the very first step, clear any old session data.
-    if request.method == 'GET' and is_respondent_step:
+    # If this is a GET request for the very first step, clear any old session data
+    # only if it's not a navigation from a later step.
+    if request.method == 'GET' and is_respondent_step and 'from_section' not in request.GET:
         if 'survey_answers' in request.session:
             del request.session['survey_answers']
         if 'respondent_data' in request.session:
@@ -472,7 +473,7 @@ def survey_fill(request, survey_code):
             previous_section_url = f"{url}?section={current_section_idx - 1}"
         else:
             # The step before the first section is the respondent info step
-            previous_section_url = url
+            previous_section_url = f"{url}?from_section=0"
 
         # Lógica para copiar respuestas de preguntas anteriores
         initial_data = request.session.get('survey_answers', {}).get(str(current_section.pk), {})
