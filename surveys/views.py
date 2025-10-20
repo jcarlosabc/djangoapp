@@ -512,6 +512,8 @@ def survey_fill(request, survey_code):
         previous_answers_json = json.dumps(all_previous_answers)
         # --- End of new logic ---
 
+        initial_data_json = json.dumps(initial_data)
+
         questions_before = 0
         for i in range(current_section_idx):
             questions_before += sections[i].questions.count()
@@ -526,6 +528,7 @@ def survey_fill(request, survey_code):
             'data_protection_clause_text': settings.DATA_PROTECTION_CLAUSE_TEXT,
             'previous_section_url': previous_section_url,
             'previous_answers_json': previous_answers_json,
+            'initial_data_json': initial_data_json,
             'questions_before': questions_before,
         }
     

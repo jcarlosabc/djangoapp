@@ -189,6 +189,7 @@
 </div>
 
 <script id="previous-answers" type="application/json">{{ previous_answers_json|safe|default:"{}" }}</script>
+<script id="initial-answers" type="application/json">{{ initial_data_json|safe|default:"{}" }}</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -503,12 +504,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- "Other" option logic ---
     function handleOtherOption() {
+        const initialAnswersElement = document.getElementById('initial-answers');
+        let initialAnswers = {};
+        if (initialAnswersElement && initialAnswersElement.textContent) {
+            try {
+                initialAnswers = JSON.parse(initialAnswersElement.textContent);
+            } catch (e) {
+                console.error("Error parsing initial answers JSON:", e);
+            }
+        }
+
         document.querySelectorAll('.question-wrapper[data-other-trigger]').forEach(wrapper => {
             const triggerCode = wrapper.dataset.otherTrigger;
             const otherTextWrapper = wrapper.querySelector('.other-text-wrapper');
             if (!triggerCode || !otherTextWrapper) return;
 
             const questionId = wrapper.dataset.questionId;
+            const otherTextInput = otherTextWrapper.querySelector('input');
+            const otherFieldName = `question_${questionId}_other_text`;
+            if (initialAnswers[otherFieldName]) {
+                otherTextInput.value = initialAnswers[otherFieldName];
+            }
+
             const fieldElements = wrapper.querySelectorAll(
                 `input[name="question_${questionId}"], select[name="question_${questionId}"]`
             );
@@ -542,7 +559,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     otherTextWrapper.style.display = 'block';
                 } else {
                     otherTextWrapper.style.display = 'none';
-                    otherTextWrapper.querySelector('input').value = ''; // Clear value when hidden
                 }
             }
 
