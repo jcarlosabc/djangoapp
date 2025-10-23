@@ -1,3 +1,4 @@
+from django.db import models
 from django.conf import settings # Added
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -544,7 +545,7 @@ def get_ubicacion_details(request):
     ubicacion = get_object_or_404(Ubicacion, pk=ubicacion_id)
     return JsonResponse({'loc': ubicacion.loc, 'zona': ubicacion.zona})
 
-from django.db.models import Count, Avg, Min, Max
+from django.db.models import Count, Avg, Min, Max, Q
 
 @login_required
 def dashboard_view(request):
@@ -614,10 +615,15 @@ def survey_stats_view(request, survey_code):
         messages.error(request, "Acceso no autorizado.")
         return redirect('surveys:list')
     survey = get_object_or_404(Survey, code=survey_code)
-    response_count = ResponseSet.objects.filter(survey=survey).count()
+    response_sets = ResponseSet.objects.filter(survey=survey)
+    response_count = response_sets.count()
     
+    # Get response counts by interviewer for this survey
+    interviewer_response_counts = response_sets.values('interviewer__full_name').annotate(count=Count('id')).order_by('-count')
+
     questions = Question.objects.filter(section__survey=survey).order_by('section__order', 'order')
 
+    # Overall stats
     stats_data = []
     for q in questions:
         q_stats = {
@@ -629,7 +635,7 @@ def survey_stats_view(request, survey_code):
         if q.qtype in [QuestionType.SINGLE, QuestionType.MULTI, QuestionType.LIKERT]:
             options_with_counts = []
             # Usamos anotaciones de Django para contar las respuestas por opción
-            options = q.options.all().annotate(count=Count('selected_in')).order_by('-count')
+            options = q.options.all().annotate(count=Count('selected_in', filter=models.Q(selected_in__response__in=response_sets))).order_by('-count')
             total_votes = sum(opt.count for opt in options)
             
             for option in options:
@@ -644,7 +650,7 @@ def survey_stats_view(request, survey_code):
 
         elif q.qtype in [QuestionType.INTEGER, QuestionType.DECIMAL]:
             agg_field = 'integer_answer' if q.qtype == QuestionType.INTEGER else 'decimal_answer'
-            result = Answer.objects.filter(question=q, response__survey=survey).aggregate(
+            result = Answer.objects.filter(question=q, response__in=response_sets).aggregate(
                 avg=Avg(agg_field),
                 min=Min(agg_field),
                 max=Max(agg_field)
@@ -655,7 +661,7 @@ def survey_stats_view(request, survey_code):
             q_stats['data'] = result
 
         elif q.qtype == QuestionType.BOOL:
-            counts = Answer.objects.filter(question=q, response__survey=survey).values('bool_answer').annotate(count=Count('id'))
+            counts = Answer.objects.filter(question=q, response__in=response_sets).values('bool_answer').annotate(count=Count('id'))
             result = {'true': 0, 'false': 0}
             for item in counts:
                 if item['bool_answer'] == True:
@@ -669,7 +675,8 @@ def survey_stats_view(request, survey_code):
     context = {
         'survey': survey,
         'response_count': response_count,
-        'stats_data': stats_data
+        'interviewer_response_counts': interviewer_response_counts,
+        'stats_data': stats_data,
     }
     return render(request, 'surveys/survey_stats.html', context)
 
