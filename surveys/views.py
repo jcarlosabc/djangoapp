@@ -547,6 +547,7 @@ def get_ubicacion_details(request):
     return JsonResponse({'loc': ubicacion.loc, 'zona': ubicacion.zona})
 
 from django.db.models import Count, Avg, Min, Max, Q
+from django.db.models.functions import TruncDay
 
 @login_required
 def dashboard_view(request):
@@ -689,6 +690,12 @@ def survey_stats_view(request, survey_code):
 
         stats_data.append(q_stats)
 
+    # Chart data
+    daily_counts = response_sets.annotate(day=TruncDay('created_at')).values('day').annotate(count=Count('id')).order_by('day')
+    
+    chart_labels = [d['day'].strftime('%Y-%m-%d') for d in daily_counts]
+    chart_data = [d['count'] for d in daily_counts]
+
     context = {
         'survey': survey,
         'response_count': response_count,
@@ -696,6 +703,8 @@ def survey_stats_view(request, survey_code):
         'stats_data': stats_data,
         'start_date': start_date_str,
         'end_date': end_date_str,
+        'chart_labels': chart_labels,
+        'chart_data': chart_data,
     }
     return render(request, 'surveys/survey_stats.html', context)
 
