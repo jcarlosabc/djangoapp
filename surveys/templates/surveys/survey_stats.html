@@ -28,6 +28,8 @@
 </div>
 
 <script>
+  Chart.register(ChartDataLabels);
+
   const ctx = document.getElementById('dailyExecutionChart');
   new Chart(ctx, {
     type: 'bar',
@@ -40,6 +42,16 @@
       }]
     },
     options: {
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          formatter: Math.round,
+          font: {
+            weight: 'bold'
+          }
+        }
+      },
       scales: {
         y: {
           beginAtZero: true
