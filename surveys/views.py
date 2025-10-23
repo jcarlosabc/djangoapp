@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 from django.conf import settings # Added
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -609,13 +610,29 @@ def dashboard_view(request):
     return render(request, 'surveys/dashboard.html', context)
 
 
+from datetime import datetime
+
 @login_required
 def survey_stats_view(request, survey_code):
     if not request.user.is_staff:
         messages.error(request, "Acceso no autorizado.")
         return redirect('surveys:list')
     survey = get_object_or_404(Survey, code=survey_code)
+    
+    # Date range filter
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+    
     response_sets = ResponseSet.objects.filter(survey=survey)
+    
+    if start_date_str:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        response_sets = response_sets.filter(created_at__gte=start_date)
+        
+    if end_date_str:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+        response_sets = response_sets.filter(created_at__lte=end_date)
+
     response_count = response_sets.count()
     
     # Get response counts by interviewer for this survey
@@ -677,6 +694,8 @@ def survey_stats_view(request, survey_code):
         'response_count': response_count,
         'interviewer_response_counts': interviewer_response_counts,
         'stats_data': stats_data,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
     }
     return render(request, 'surveys/survey_stats.html', context)
 
